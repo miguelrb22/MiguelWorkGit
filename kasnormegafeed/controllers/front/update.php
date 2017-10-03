@@ -28,14 +28,27 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
     private $languages;
 
+    private $category_tree = array();
+
+    private $category_tree_branch = array();
+
     /**
      * Init
      */
     public function init()
     {
         $this->products_url = Configuration::get('KASNORMEGAFEED_URL_PRODUCT');
+
         $this->stocks_url = Configuration::get('KASNORMEGAFEED_URL_STOCKS');
+
         $this->languages = Language::getLanguages();
+
+        $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT", 0);
+
+        if ((empty($parent) || $parent == 0)) throw new Exception("No hay categoría por defecto configurada");
+
+        $this->upTree($parent); // iniciarlizar arbol de categorias
+
 
         parent::init();
     }
@@ -61,7 +74,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
             throw new Exception("No suitable method");
         }
-
     }
 
 
@@ -77,42 +89,36 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $datas = $this->renderFile($this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT));
 
-        if(!isset($datas) || empty($datas) || $datas == false) return false;
+        if (!isset($datas) || empty($datas) || $datas == false) return false;
 
-        $i = 0;
+        $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT", 0);
 
+        if ((empty($parent) || $parent == 0)) throw new Exception("No hay categoría por defecto configurada");
 
-        foreach ($datas as $data){
+        foreach ($datas as $data) {
 
-            $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT",0);
-            if((empty($parent) || $parent == 0)) throw new Exception("No hay categoría por defecto configurada");
+            $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT", 0); // hace falta reiniciarlo cada vez
 
-            $i++;
-
-            if($i == 6) die();
             $product = new Product($data["id_product"]);
 
             //si no existe
-            if(!Validate::isLoadedObject($product)) {
+            if (!Validate::isLoadedObject($product)) {
 
                 $categories_aux = $data["default_category"];
 
-                if(empty($categories_aux)) continue;
+                if (empty($categories_aux)) continue;
 
-                $categories = array_map('trim',(explode('>',$categories_aux)));
+                $categories = array_map('trim', (explode('>', $categories_aux)));
 
 
                 foreach ($categories as $category) {
 
-                    $id_category = $this->getCategoryByName($parent, $category);
+                    $id_category = $this->getOrCreateCategoryByName($parent, $category);
                     $parent = $id_category;
 
                 }
-
             }
-
         }
-
     }
 
     /**
@@ -137,9 +143,13 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $file = Tools::file_get_contents($this->products_url);
 
             if ($file != false) {
+
                 file_put_contents($this->products_path, $file);
+
                 return true;
+
             } else {
+
                 return false;
             }
 
@@ -148,9 +158,13 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $file = Tools::file_get_contents($this->stocks_url);
 
             if ($file != false) {
+
                 file_put_contents($this->stocks_path, $file);
+
                 return true;
+
             } else {
+
                 return false;
             }
 
@@ -158,7 +172,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
             return false;
         }
-
     }
 
     /**
@@ -182,9 +195,10 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             return false;
         }
 
-
         $fila = 1;
+
         $result = array();
+
         $keys = array();
 
         if (($gestor = fopen($file, "r")) !== FALSE) {
@@ -192,9 +206,13 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             while (($datos = fgetcsv($gestor, 0, ";")) !== FALSE) {
 
                 $numero = count($datos);
+
                 $array = array();
+
                 for ($c = 0; $c < $numero; $c++) {
+
                     $array[] = $datos[$c];
+
                 }
 
                 if ($fila == 1) {
@@ -211,8 +229,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 }
 
                 $fila++;
-
             }
+
             fclose($gestor);
 
             return $result;
@@ -227,78 +245,117 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
      * @param $name nombre de la categoria a buscar
      * @return id_category
      */
-    private function getCategoryByName($parent, $name) {
-
+    private function getOrCreateCategoryByName($parent, $name)
+    {
 
         $name = utf8_encode($name);
-        //obtengo todas las cateogi
-        $categories_aux = Category::getChildren($parent,Context::getContext()->language->id);
 
+        //hijos del padre
+        $childs = $this->category_tree[$parent]['childs'];
 
+        //si no existe el hijo lo creo y lo añado al array de hijos
+        if (!in_array($name, $childs)) {
 
-        if(!isset($categories_aux) || empty($categories_aux)){
+            $id = $this->createCategory($name, $parent);
 
-            $languages_name = array();
-            $links_rewrite = array();
+            $this->category_tree[$parent]['childs'][$id] = $name;
 
-            foreach ($this->languages as $language){
-                $languages_name[$language['id_lang']] = $name;
-            }
+            return $id;
+        } //si existe devuelvo el id del hijo
+        else {
 
-            foreach ($this->languages as $language){
-                $links_rewrite[$language['id_lang']] = Tools::link_rewrite($name);
-            }
-
-            $category = new CategoryCore();
-            $category->id_parent = $parent;
-            $category->name = $languages_name;
-            $category->active = true;
-            $category->link_rewrite = $links_rewrite;
-            $category->save();
-
-            return $category->id;
+            return (array_search($name, $childs = $this->category_tree[$parent]['childs']));
         }
 
-        //busco la solicitada por nombre
-        $result = array_filter($categories_aux, function($category) use ($name){
-            return  $category["name"] == $name;
-        });
+    }
 
 
-        var_dump($result);
+    /**
+     * Crea una nueva categoria
+     * @param $name
+     * @param $parent
+     * @return mixed
+     */
+    public function createCategory($name, $parent)
+    {
 
-        $result = reset($result);
+        $languages_name = array();
 
+        $links_rewrite = array();
 
-
-
-        //si no existe creo una categoria nueva
-        if(!isset($result) || empty($result)) {
-
-            $languages_name = array();
-            $links_rewrite = array();
-
-            foreach ($this->languages as $language){
-                $languages_name[$language['id_lang']] = $name;
-            }
-
-            foreach ($this->languages as $language){
-                $links_rewrite[$language['id_lang']] = Tools::link_rewrite($name);
-            }
-
-            $category = new CategoryCore();
-            $category->id_parent = $parent;
-            $category->name = $languages_name;
-            $category->active = true;
-            $category->link_rewrite = $links_rewrite;
-            $category->save();
-
-            return $category->id;
-
-
+        foreach ($this->languages as $language) {
+            $languages_name[$language['id_lang']] = $name;
         }
 
-        return $result["id_category"];
+        foreach ($this->languages as $language) {
+
+            $links_rewrite[$language['id_lang']] = Tools::link_rewrite($name);
+        }
+
+        $category = new CategoryCore();
+
+        $category->id_parent = $parent;
+
+        $category->name = $languages_name;
+
+        $category->active = true;
+
+        $category->link_rewrite = $links_rewrite;
+
+        $category->save();
+
+        return $category->id;
+
+    }
+
+
+    /**
+     * Inicializa el array de categorias ya creadas
+     * @param $parent
+     */
+    public function upTree($parent)
+    {
+        $childrens = $this->getChildren($parent, Context::getContext()->language->id);
+
+        $category = new Category($parent, Context::getContext()->language->id);
+
+        $this->category_tree[$category->id]['name'] = $category->name;
+
+        foreach ($childrens as $children) {
+
+            $this->category_tree[$category->id]['childs'][$children['id_category']] = $children['name'];
+
+            $this->upTree($children['id_category']);
+
+        }
+    }
+
+
+    /**
+     * Obtiene las categorias que son hijas del padre pasado
+     * @param $id_parent
+     * @param $id_lang
+     * @param bool $active
+     * @param bool $id_shop
+     * @return array|false|mysqli_result|null|PDOStatement|resource
+     */
+    public function getChildren($id_parent, $id_lang, $active = true, $id_shop = false)
+    {
+        if (!Validate::isBool($active)) {
+            die(Tools::displayError());
+        }
+
+        $query = 'SELECT c.`id_category`, cl.`name`, cl.`link_rewrite`, category_shop.`id_shop`
+			FROM `' . _DB_PREFIX_ . 'category` c
+			LEFT JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (c.`id_category` = cl.`id_category`' . Shop::addSqlRestrictionOnLang('cl') . ')
+			' . Shop::addSqlAssociation('category', 'c') . '
+			WHERE `id_lang` = ' . (int)$id_lang . '
+			AND c.`id_parent` = ' . (int)$id_parent . '
+			' . ($active ? 'AND `active` = 1' : '') . '
+			GROUP BY c.`id_category`
+			ORDER BY category_shop.`position` ASC';
+        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+        return $result;
 
     }
 
