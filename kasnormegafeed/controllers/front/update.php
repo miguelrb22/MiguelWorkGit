@@ -134,7 +134,9 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $this->createProduct($data, $parent);
             }
 
-            if ($i > 40) {
+
+            //DANGER DANGER: TODO BORRAR EN PRODUCCION
+            if ($i > 200) {
 
                 Search::indexation(1);
 
@@ -443,7 +445,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     public function createProduct($data, $parent)
     {
 
-
         $shop = Context::getContext()->shop->id;
         $product = new ProductCore();
 
@@ -473,6 +474,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
             $shot_description_languages[$language['id_lang']] = $data['description_short'];
         }
+
 
         $product->name = $languages_name;
         $product->link_rewrite = $links_rewrite;
@@ -512,7 +514,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $combination_resume = array();
 
-        dump($combinations);
+
         foreach ($combinations as $combination) {
 
 
@@ -523,11 +525,25 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $attribute_id = $this->getOrCreateAttribute($group_id, $attribute_name);
 
 
-            //TODO
-            $combination_resume[$group_id][] = $attribute_id;
+            //Asigno los atributos pertenecientes a cada combinacion
+            $combination_resume[$combination['id_product_attribute']]['default'] = $combination['default_on'];
+            $combination_resume[$combination['id_product_attribute']]['price'] = $combination['price'];
+            $combination_resume[$combination['id_product_attribute']]['reference'] = "KAS" . $combination['reference'];
+            $combination_resume[$combination['id_product_attribute']]['attributes'][] = $attribute_id;
 
         }
 
+
+        //crear combinaciones para cada producto
+        foreach ($combination_resume as $resume) {
+
+            $ipa = $product->addCombinationEntity(0, 0, 0, 0, 0, 0, null, "", 0, "", $resume['default']);
+            $combi = new Combination($ipa);
+            $combi->setAttributes($resume['attributes']);
+            $combi->reference = $resume['reference'];
+            $combi->price = $resume['price'];
+            $combi->save();
+        }
 
     }
 
@@ -586,7 +602,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
      * @param $group
      * @param $name
      */
-    public function getOrCreateAttribute($group, $name, $color = 0, $default = 0){
+    public function getOrCreateAttribute($group, $name, $color = 0, $default = 0)
+    {
 
 
         //atributos del grupo
