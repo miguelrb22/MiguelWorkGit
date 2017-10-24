@@ -28,9 +28,19 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+
+$pq_lib_path = dirname(__FILE__).'/lib/PqKasnormegafeedLib.php';
+if (!file_exists($pq_lib_path)) {
+    exit;
+}
+require_once $pq_lib_path;
+
 class Kasnormegafeed extends Module
 {
     protected $config_form = false;
+
+    protected $url = "http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor";
+
 
     public function __construct()
     {
@@ -61,9 +71,23 @@ class Kasnormegafeed extends Module
      */
     public function install()
     {
-        return parent::install();
-    }
+         try {
+            $correct = parent::install();
 
+            if($correct)
+            {
+                 $correct = $correct &&
+                    $this->registerHook('actionValidateOrder');
+            }
+
+            return $correct;
+         } catch (Exception $ex)
+         {
+              PqKasnormegafeedLib::logException($ex);
+         }
+    
+    }
+    
     public function uninstall()
     {
 
@@ -92,6 +116,72 @@ class Kasnormegafeed extends Module
         return $output.$this->renderForm();
     }
 
+
+     /**
+     * @param $params
+     * evento para cuando se valida un pedido
+     */
+    public function hookActionValidateOrder($params)
+    {
+        //VARIABLES PARA ENVIAR A KASNOR
+        $reference = "";
+        $quantity = "";
+        $email = Configuration::get('KASNORMEGAFEED_EMAIL_USER');
+        $address = "" ;
+        $json_array = array();
+
+
+        // COMPROBAMOS QUE NO SEA NULL EL CARRITO
+        if (!empty($params["cart"])) {
+
+            //RECORREMOS TODOS LOS PRODUCTOS DEL CARRITO
+            $index = 0;
+
+
+            $json_array['email'] = $email;
+
+            $address = new Address((int)$params["cart"]->id_address_delivery);
+            $json_array['address']['id'] = $address->id;
+            $json_array['address']['country'] = $address->country;
+            $json_array['address']['lastname'] = $address->lastname;
+            $json_array['address']['firstname'] = $address->firstname;
+            $json_array['address']['address1'] = $address->address1;
+            $json_array['address']['address2'] = $address->address2;
+            $json_array['address']['postcode'] = $address->postcode;
+            $json_array['address']['city'] = $address->city;
+            $json_array['address']['phone'] = $address->phone;
+            $json_array['address']['phone_mobile'] = $address->phone_mobile;
+            $json_array['address']['dni'] = $address->dni;
+
+
+
+            foreach($params["cart"]->getProducts() as $value)
+            {
+                $reference = $value['reference'];
+               
+                if(strpos($reference,'KAS') !== false)
+                {
+                    $quantity = $value['cart_quantity'];
+
+                    //AÑADIMOS A EN UN ARRAY TODOS LOS DATOS NECESARIO PARA ENVIAR
+
+                    $product = array('reference' => $reference, 'quantity' => $quantity);
+                    $json_array['products'][] = $product;
+
+                }
+
+            }
+            //CONTROLAMOS QUE ESTÁ INSTALADO EL OTRO MÓDULO
+            /* "/module/pqkasnormegafeedorders/connectkasnor" */
+
+
+            $result = $this->kasnorOrderRequest(json_encode($json_array));
+
+            ddd($result);
+        }
+        return false;
+
+    }
     /**
      * Create the form that will be displayed in the configuration of your module.
      */
@@ -153,6 +243,13 @@ class Kasnormegafeed extends Module
                     ),
                     array(
                         'col' => 4,
+                        'type' => 'text',
+                        'name' => 'KASNORMEGAFEED_EMAIL_USER',
+                        'desc' => $this->l('Email of the customer for send order to kasnor'),
+                        'label' => $this->l('Email customer'),
+                    ),
+                    array(
+                        'col' => 4,
                         'type' => 'select',
                         'name' => 'KASNORMEGAFEED_CATEGORY_DEFAULT',
                         'desc' => $this->l('Default category for Kasnor Prodycts'),
@@ -179,6 +276,7 @@ class Kasnormegafeed extends Module
         return array(
             'KASNORMEGAFEED_URL_PRODUCT' => Configuration::get('KASNORMEGAFEED_URL_PRODUCT', ''),
             'KASNORMEGAFEED_URL_STOCK' => Configuration::get('KASNORMEGAFEED_URL_STOCK', ''),
+            'KASNORMEGAFEED_EMAIL_USER' => Configuration::get('KASNORMEGAFEED_EMAIL_USER', ''),
             'KASNORMEGAFEED_CATEGORY_DEFAULT' => Configuration::get('KASNORMEGAFEED_CATEGORY_DEFAULT', ''),
 
         );
@@ -194,6 +292,35 @@ class Kasnormegafeed extends Module
         foreach (array_keys($form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+    }
+
+
+    /**
+     * Llama a kasnor para crear el pedido
+     * @param $url
+     * @param $order
+     * @return mixed
+     */
+    private function kasnorOrderRequest($order){
+
+
+        ddd($order);
+        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={"email":"miguel@prestquality.com","address":{"id":5,"country":"Espa\u00f1a","lastname":"Ruiz","firstname":"Miguek","address1":"qdwqd","address2":"","postcode":"03370","city":"Redovan","phone":"666666666","phone_mobile":"666666666","dni":"48642143H"},"products":[{"reference":"KAS10","quantity":"1"}]}
+
+        $data = array("order" => $order);
+
+        $ch = curl_init( $this->url );
+        curl_setopt( $ch, CURLOPT_POST, 1);
+        curl_setopt( $ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt( $ch, CURLOPT_HEADER, 0);
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec( $ch );
+
+        curl_close($ch);
+
+        return $response;
     }
 
 

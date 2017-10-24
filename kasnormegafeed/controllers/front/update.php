@@ -1,5 +1,4 @@
 <?php
-
 error_reporting(-1);
 ini_set('display_errors', 1);
 set_time_limit(0);
@@ -13,23 +12,15 @@ set_time_limit(0);
 class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 {
 
-
     const PRODUCT = "products";
-
     const STOCKS = "stocks";
 
     private $products_path = _PS_MODULE_DIR_ . "kasnormegafeed/files/products.csv";
-
     private $stocks_path = _PS_MODULE_DIR_ . "kasnormegafeed/files/stocks.csv";
-
     private $products_url;
-
     private $stocks_url;
-
     private $languages;
-
     private $category_tree = array();
-
     private $attributes_tree = array();
 
     /**
@@ -39,7 +30,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     {
         $this->products_url = Configuration::get('KASNORMEGAFEED_URL_PRODUCT');
 
-        $this->stocks_url = Configuration::get('KASNORMEGAFEED_URL_STOCKS');
+        $this->stocks_url = Configuration::get('KASNORMEGAFEED_URL_STOCK');
 
         $this->languages = Language::getLanguages();
 
@@ -57,7 +48,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT", 0);
 
-        if ((empty($parent) || $parent == 0)) throw new Exception("No hay categoría por defecto configurada");
+        if ((empty($parent) || $parent == 0))
+            throw new Exception("No hay categoría por defecto configurada");
 
 
         if ($action == KasnorMegaFeedUpdateModuleFrontController::PRODUCT) {
@@ -67,17 +59,15 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $this->upAttributesTree();
 
             $this->processProducts();
-
         } else if ($action == KasnorMegaFeedUpdateModuleFrontController::STOCKS) {
 
             $this->processStocks();
-
         } else {
 
             throw new Exception("No suitable method");
         }
+        die('finish');
     }
-
 
     /**
      * Insertar nuevos productos (Actualización de productos)
@@ -88,17 +78,20 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         //Se intenta actualizar el archivo descargandolo del servidor
         $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
 
-        if (!$result) return false;
+        if (!$result)
+            return false;
 
         //se convierte el archivo a un array de datos
-        $datas = $this->renderFile($this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT));
+        $datas = $this->renderFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
 
-        if (!isset($datas) || empty($datas) || $datas == false) return false;
+        if (!isset($datas) || empty($datas) || $datas == false)
+            return false;
 
         //categoria padre de kasnor
         $parent = Configuration::get("KASNORMEGAFEED_CATEGORY_DEFAULT", 0);
 
-        if ((empty($parent) || $parent == 0)) throw new Exception("No hay categoría por defecto configurada");
+        if ((empty($parent) || $parent == 0))
+            throw new Exception("No hay categoría por defecto configurada");
 
 
         $i = 0;
@@ -118,7 +111,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
                 $categories_aux = $data["default_category"];
 
-                if (empty($categories_aux)) continue;
+                if (empty($categories_aux))
+                    continue;
 
                 $categories = array_map('trim', (explode('>', $categories_aux)));
 
@@ -128,7 +122,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                     $id_category = $this->getOrCreateCategoryByName($parent, $category);
 
                     $parent = $id_category;
-
                 }
 
                 $this->createProduct($data, $parent);
@@ -141,30 +134,13 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 Search::indexation(1);
 
                 die();
-
             }
         }
 
-        Context::getContext()->shop->setContext(Shop::CONTEXT_SHOP, (int)Tools::getValue('id_shop'));
+        Context::getContext()->shop->setContext(Shop::CONTEXT_SHOP, (int) Tools::getValue('id_shop'));
 
         Search::indexation(1);
-
     }
-
-    /**
-     * Actualizar stocks
-     */
-    private function processStocks()
-    {
-
-        $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::STOCKS);
-
-        if (!$result) return false;
-
-        $data = $this->renderFile($this->updateFile(KasnorMegaFeedUpdateModuleFrontController::STOCKS));
-
-    }
-
 
     /**
      * Descarga el archivo nuevo de el servidor
@@ -174,36 +150,25 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     private function updateFile($type)
     {
 
+        $url = '';
+        $path = '';
         if ($type == KasnorMegaFeedUpdateModuleFrontController::PRODUCT) {
+            $url = $this->products_url;
+            $path = $this->products_path;
+        } elseif ($type == KasnorMegaFeedUpdateModuleFrontController::STOCKS) {
+            $url = $this->stocks_url;
+            $path = $this->stocks_path;
+        } else {
+            return false;
+        }
 
-            $file = Tools::file_get_contents($this->products_url);
+        $file = Tools::file_get_contents($url);
 
-            if ($file != false) {
+        if ($file != false) {
 
-                file_put_contents($this->products_path, $file);
+            file_put_contents($path, $file);
 
-                return true;
-
-            } else {
-
-                return false;
-            }
-
-        } else if ($type == KasnorMegaFeedUpdateModuleFrontController::STOCKS) {
-
-            $file = Tools::file_get_contents($this->stocks_url);
-
-            if ($file != false) {
-
-                file_put_contents($this->stocks_path, $file);
-
-                return true;
-
-            } else {
-
-                return false;
-            }
-
+            return true;
         } else {
 
             return false;
@@ -221,15 +186,14 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         if ($type == KasnorMegaFeedUpdateModuleFrontController::PRODUCT) {
 
             $file = $this->products_path;
-
         } else if ($type == KasnorMegaFeedUpdateModuleFrontController::STOCKS) {
 
             $file = $this->stocks_path;
-
         } else {
 
             return false;
         }
+
 
         $fila = 1;
 
@@ -248,20 +212,17 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 for ($c = 0; $c < $numero; $c++) {
 
                     $array[] = utf8_encode($datos[$c]);
-
                 }
 
                 if ($fila == 1) {
 
                     $keys = $array;
-
                 } else {
 
                     $combine = array_combine($keys, $array);
 
                     if ($combine != false)
                         $result[] = $combine;
-
                 }
 
                 $fila++;
@@ -270,9 +231,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             fclose($gestor);
 
             return $result;
-
-        } else return false;
-
+        } else
+            return false;
     }
 
     /**
@@ -283,8 +243,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
      */
     private function getOrCreateCategoryByName($parent, $name)
     {
-
-        $name = utf8_encode($name);
+        if (!mb_detect_encoding($name, 'UTF-8', true))
+            $name = utf8_encode($name);
 
         //hijos del padre
         $childs = @$this->category_tree[$parent]['childs'];
@@ -302,9 +262,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
             return (array_search($name, $childs = $this->category_tree[$parent]['childs']));
         }
-
     }
-
 
     /**
      * Crea una nueva categoria
@@ -328,7 +286,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $links_rewrite[$language['id_lang']] = Tools::link_rewrite($name);
         }
 
-        $category = new CategoryCore();
+        $category = new Category();
 
         $category->id_parent = $parent;
 
@@ -341,9 +299,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         $category->save();
 
         return $category->id;
-
     }
-
 
     /**
      * Inicializa el array de categorias ya creadas
@@ -362,7 +318,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $this->category_tree[$category->id]['childs'][$children['id_category']] = $children['name'];
 
             $this->upCategoryTree($children['id_category']);
-
         }
     }
 
@@ -388,13 +343,10 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
                 $result[$group['id_attribute_group']]['attributes'][$attribute['id_attribute']] = $attribute['name'];
             }
-
         }
 
         $this->attributes_tree = $result;
-
     }
-
 
     /**
      * Obtiene las categorias que son hijas del padre pasado
@@ -414,16 +366,14 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 			FROM `' . _DB_PREFIX_ . 'category` c
 			LEFT JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (c.`id_category` = cl.`id_category`' . Shop::addSqlRestrictionOnLang('cl') . ')
 			' . Shop::addSqlAssociation('category', 'c') . '
-			WHERE `id_lang` = ' . (int)$id_lang . '
-			AND c.`id_parent` = ' . (int)$id_parent . '
+			WHERE `id_lang` = ' . (int) $id_lang . '
+			AND c.`id_parent` = ' . (int) $id_parent . '
 			' . ($active ? 'AND `active` = 1' : '') . '
 			GROUP BY c.`id_category`
 			ORDER BY category_shop.`position` ASC';
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
         return $result;
-
     }
-
 
     /**
      * Comprueba si existe o no una referencia en la BBDD
@@ -437,7 +387,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         return $id;
     }
 
-
     /**
      * @param $data
      * @param $parent
@@ -446,7 +395,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     {
 
         $shop = Context::getContext()->shop->id;
-        $product = new ProductCore();
+        $product = new Product();
 
         $languages_name = array();
 
@@ -467,7 +416,8 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         }
 
         foreach ($this->languages as $language) {
-            $description_languages[$language['id_lang']] = $data['description'];;
+            $description_languages[$language['id_lang']] = $data['description'];
+            ;
         }
 
         foreach ($this->languages as $language) {
@@ -479,7 +429,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         $product->name = $languages_name;
         $product->link_rewrite = $links_rewrite;
         $product->id_category_default = $parent;
-        $product->category = $parent;
         $product->price = $data['price'];
         $product->quantity = $data['quantity'];
         $product->wholesale_price = $data['wholesale_price'];
@@ -497,6 +446,10 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $product->save();
 
+        //Tras guardar asignamos las categorías
+        $product->updateCategories([$parent]);
+
+
         $images = array_map('trim', (explode(',', $data['images'])));
 
         $cover = true;
@@ -507,7 +460,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $this->setImage($product->id, array($shop), $image, $cover);
                 $cover = false;
             }
-
         }
 
         $combinations = json_decode($data['combinations'], true);
@@ -530,7 +482,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $combination_resume[$combination['id_product_attribute']]['price'] = $combination['price'];
             $combination_resume[$combination['id_product_attribute']]['reference'] = "KAS" . $combination['reference'];
             $combination_resume[$combination['id_product_attribute']]['attributes'][] = $attribute_id;
-
         }
 
 
@@ -544,9 +495,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $combi->price = $resume['price'];
             $combi->save();
         }
-
     }
-
 
     /**
      * Devuelve el id del grupo de atributos, si no existe lo cre y lo devuelve
@@ -592,7 +541,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $this->attributes_tree[$atgroup->id] = array("name" => $group_name, "attributes" => array());
 
             return $atgroup->id;
-
         }
 
         return $key;
@@ -636,7 +584,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $this->attributes_tree[$group]['attributes'][$atr->id] = $name;
 
             return $atr->id;
-
         }
 
         return $key;
@@ -668,7 +615,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         return $image->id;
     }
 
-
     /**
      * @param $id_entity
      * @param null $id_image
@@ -688,13 +634,13 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $path = $image_obj->getPathForCreation();
                 break;
             case "categories":
-                $path = _PS_CAT_IMG_DIR_ . (int)$id_entity;
+                $path = _PS_CAT_IMG_DIR_ . (int) $id_entity;
                 break;
             case "manufacturers":
-                $path = _PS_MANU_IMG_DIR_ . (int)$id_entity;
+                $path = _PS_MANU_IMG_DIR_ . (int) $id_entity;
                 break;
             case "suppliers":
-                $path = _PS_SUPP_IMG_DIR_ . (int)$id_entity;
+                $path = _PS_SUPP_IMG_DIR_ . (int) $id_entity;
                 break;
         }
         $url = urldecode(trim($url));
@@ -726,8 +672,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $tgt_width = $tgt_height = 0;
             $src_width = $src_height = 0;
             $error = 0;
-            ImageManager::resize($tmpfile, $path . ".jpg", null, null, "jpg", false, $error, $tgt_width, $tgt_height, 5,
-                $src_width, $src_height);
+            ImageManager::resize($tmpfile, $path . ".jpg", null, null, "jpg", false, $error, $tgt_width, $tgt_height, 5, $src_width, $src_height);
             $images_types = ImageType::getImagesTypes($entity, true);
             if ($regenerate) {
                 $previous_path = null;
@@ -735,19 +680,17 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $path_infos[] = array($tgt_width, $tgt_height, $path . ".jpg");
                 foreach ($images_types as $image_type) {
                     $tmpfile = get_best_path($image_type["width"], $image_type["height"], $path_infos);
-                    if (ImageManager::resize($tmpfile, $path . "-" . stripslashes($image_type["name"]) . ".jpg", $image_type["width"],
-                        $image_type["height"], "jpg", false, $error, $tgt_width, $tgt_height, 5,
-                        $src_width, $src_height)
+                    if (ImageManager::resize($tmpfile, $path . "-" . stripslashes($image_type["name"]) . ".jpg", $image_type["width"], $image_type["height"], "jpg", false, $error, $tgt_width, $tgt_height, 5, $src_width, $src_height)
                     ) {
                         if ($tgt_width <= $src_width && $tgt_height <= $src_height) {
                             $path_infos[] = array($tgt_width, $tgt_height, $path . "-" . stripslashes($image_type["name"]) . ".jpg");
                         }
                         if ($entity == "products") {
-                            if (is_file(_PS_TMP_IMG_DIR_ . "product_mini_" . (int)$id_entity . ".jpg")) {
-                                unlink(_PS_TMP_IMG_DIR_ . "product_mini_" . (int)$id_entity . ".jpg");
+                            if (is_file(_PS_TMP_IMG_DIR_ . "product_mini_" . (int) $id_entity . ".jpg")) {
+                                unlink(_PS_TMP_IMG_DIR_ . "product_mini_" . (int) $id_entity . ".jpg");
                             }
-                            if (is_file(_PS_TMP_IMG_DIR_ . "product_mini_" . (int)$id_entity . "_" . (int)Context::getContext()->shop->id . ".jpg")) {
-                                unlink(_PS_TMP_IMG_DIR_ . "product_mini_" . (int)$id_entity . "_" . (int)Context::getContext()->shop->id . ".jpg");
+                            if (is_file(_PS_TMP_IMG_DIR_ . "product_mini_" . (int) $id_entity . "_" . (int) Context::getContext()->shop->id . ".jpg")) {
+                                unlink(_PS_TMP_IMG_DIR_ . "product_mini_" . (int) $id_entity . "_" . (int) Context::getContext()->shop->id . ".jpg");
                             }
                         }
                     }
@@ -763,7 +706,6 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         unlink($orig_tmpfile);
         return true;
     }
-
 
     /**
      * @param $tgt_width
@@ -784,5 +726,97 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         return $path;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Actualizaciones">
+    /**
+     * Actualizar stocks
+     */
+    private function processStocks()
+    {
 
+        /*$result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::STOCKS);
+
+        if (!$result)
+            return false;*/
+
+        $data = $this->renderFile(KasnorMegaFeedUpdateModuleFrontController::STOCKS);
+
+        //Recogemos la info de los productos
+        $products_db = new DbQuery();
+        $products_db->select('id_product,reference')->from('product')->where('reference LIKE "KAS%"');
+        $products_db = db::getInstance()->executeS($products_db);
+        //Y ahora de las combinaciones
+        $comb_db = new DbQuery();
+        $comb_db->select('id_product,id_product_attribute,reference')->from('product_attribute')->where('reference LIKE "KAS%"');
+        $comb_db = db::getInstance()->executeS($comb_db);
+
+
+        //Recorremos cada linea
+        foreach ($data as $data_row) {
+            //Bucamos la correspondencia 
+            $product_find = array_filter($comb_db, function($r)use($data_row) {
+                return $r['reference'] == ('KAS' . $data_row['reference']);
+            });
+            //Si no hay producto, buscamos por el producto en plano
+            if (empty($product_find)) {
+                $product_find = array_filter($products_db, function($r)use($data_row) {
+                    return $r['reference'] == ('KAS' . $data_row['reference']);
+                });
+            }
+
+            if (empty($product_find))//No encontrado, siguiente
+                continue;
+
+            //Sacamos idProduct
+            $product_find = reset($product_find);
+            $id_product = $product_find['id_product'];
+            $ipa = 0;
+            if (isset($product_find['id_product_attribute'])) {
+                $ipa = $product_find['id_product_attribute'];
+            }
+
+            //Llamamos a actualizar el producto
+            $this->updateProduct($id_product, $ipa, $data_row);
+        }
+    }
+
+    /**
+     * Actualiza el producto con los datos recibidos
+     * @param type $idp id_product
+     * @param type $ipa
+     * @param type $data
+     */
+    private function updateProduct($idp, $ipa, $data)
+    {
+        //Obtenemos producto
+        $product_obj = new Product($idp);
+        if (!Validate::isLoadedObject($product_obj))
+            return false;
+        //Establecemos precio
+        if ($ipa != 0) {
+            //Combinación
+            $combination = new Combination($ipa);
+            $original_price = (float)round($combination->price,4);
+            $price = (float) $data['price'];
+            if ($original_price != $price) {//evitamos el lanzamiento de hooks
+                $combination->price = $price - $product_obj->price;
+                $combination->save();
+            }
+        } else {
+            //Producto
+            $original_price = (float)round($product_obj->price,4);
+            $price = (float)$data['price'];
+            if ($price != $original_price) {//evitamos el lanzamiento de hooks
+                $product_obj->price = $data['price'];
+                $product_obj->save();
+            }
+        }
+        
+        //Stock
+        $current_stock = StockAvailable::getQuantityAvailableByProduct($idp,$ipa);
+        //Si el stock es distinto al nuevo, actualizamos (evitamos el lanzamiento de hooks)
+        if($current_stock!=$data['quantity']){
+            StockAvailable::setQuantity($idp,$ipa,$data['quantity']);
+        }
+    }
+    //</editor-fold>
 }
