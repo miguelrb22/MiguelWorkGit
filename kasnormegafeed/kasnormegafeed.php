@@ -305,7 +305,7 @@ class Kasnormegafeed extends Module
 
 
         ddd($order);
-        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={"email":"miguel@prestquality.com","address":{"id":5,"country":"Espa\u00f1a","lastname":"Ruiz","firstname":"Miguek","address1":"qdwqd","address2":"","postcode":"03370","city":"Redovan","phone":"666666666","phone_mobile":"666666666","dni":"48642143H"},"products":[{"reference":"KAS10","quantity":"1"}]}
+        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={"email":"miguel@prestquality.com","address":{"id":5,"country":"Espa\u00f1a","lastname":"Ruiz","firstname":"Miguek","address1":"qdwqd","address2":"","postcode":"03370","city":"Redovan","phone":"666666666","phone_mobile":"666666666","dni":"48642143H"},"products":[{"reference":"KAS000478","quantity":"1"}]}
 
         $data = array("order" => $order);
 

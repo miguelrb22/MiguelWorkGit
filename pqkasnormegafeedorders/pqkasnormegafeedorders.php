@@ -14,7 +14,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 
-$pq_lib_path = dirname(__FILE__).'/lib/PqKasnormegafeedOrdersLib.php';
+$pq_lib_path = dirname(__FILE__) . '/lib/PqKasnormegafeedOrdersLib.php';
 if (!file_exists($pq_lib_path)) {
     exit;
 }
@@ -52,16 +52,15 @@ class pqkasnormegafeedorders extends Module
      */
     public function install()
     {
-         try {
+        try {
 
             $correct = parent::install();
 
             return $correct;
 
-         } catch (Exception $ex)
-         {
-              PqKasnormegafeedOrdersLib::logException($ex);
-         }
+        } catch (Exception $ex) {
+            PqKasnormegafeedOrdersLib::logException($ex);
+        }
 
     }
 
@@ -71,6 +70,115 @@ class pqkasnormegafeedorders extends Module
         return parent::uninstall();
     }
 
-    
+
+    /**
+     * Load the configuration form
+     */
+    public function getContent()
+    {
+
+        /**
+         * If values have been submitted in the form, process.
+         */
+        if (((bool)Tools::isSubmit('submitPqKasnorMegafeedOrdersModule')) == true) {
+            $this->postProcess();
+        }
+
+        $this->context->smarty->assign('module_dir', $this->_path);
+
+        $output = "";
+
+        return $output . $this->renderForm();
+    }
+
+
+    /**
+     * Create the form that will be displayed in the configuration of your module.
+     */
+    protected function renderForm()
+    {
+        $helper = new HelperForm();
+
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
+
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'submitPqKasnorMegafeedOrdersModule';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+        );
+
+        return $helper->generateForm(array($this->getConfigForm()));
+    }
+
+
+    /**
+     * Create the structure of your form.
+     */
+    protected function getConfigForm()
+    {
+
+
+        $user_groups = Group::getGroups($this->context->language->id);
+
+        return array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs',
+                ),
+                'input' => array(
+
+                    array(
+                        'col' => 4,
+                        'type' => 'select',
+                        'name' => 'KASNORMEGAFEEDORDER_USER_GROUP',
+                        'desc' => $this->l('Default Group for Kasnor Clients'),
+                        'label' => $this->l('Kasnor Client Group'),
+                        'options' => array(
+                            'query' => $user_groups,                           // $options contains the data itself.
+                            'id' => 'id_group',                           // The value of the 'id' key must be the same as the key for 'value' attribute of the <option> tag in each $options sub-array.
+                            'name' => 'name'                               // The value of the 'name' key must be the same as the key for the text content of the <option> tag in each $options sub-array.
+                        )
+                    ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save'),
+                ),
+            ),
+        );
+    }
+
+    /**
+     * Set values for the inputs.
+     */
+    protected function getConfigFormValues()
+    {
+        return array(
+            'KASNORMEGAFEEDORDER_USER_GROUP' => Configuration::get('KASNORMEGAFEEDORDER_USER_GROUP', '')
+
+        );
+    }
+
+    /**
+     * Save form data.
+     */
+    protected function postProcess()
+    {
+        $form_values = $this->getConfigFormValues();
+
+        foreach (array_keys($form_values) as $key) {
+            Configuration::updateValue($key, Tools::getValue($key));
+        }
+    }
+
 
 }
