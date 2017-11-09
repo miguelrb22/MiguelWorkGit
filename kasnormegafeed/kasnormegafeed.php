@@ -187,7 +187,7 @@ class Kasnormegafeed extends Module
             /* "/module/pqkasnormegafeedorders/connectkasnor" */
 
 
-            dump(json_encode($json_array));
+            ddd(json_encode($json_array));
             die();
             $result = $this->kasnorOrderRequest(json_encode($json_array));
 
@@ -316,10 +316,7 @@ class Kasnormegafeed extends Module
      */
     private function kasnorOrderRequest($order){
 
-
-        ddd($order);
-        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={"email":"miguel@prestaquality.com","address":{"id":5,"country":"España","lastname":"Ruiz","firstname":"Miguek","address1":"qdwqd","address2":"","postcode":"03370","city":"Redovan","phone":"666666666","phone_mobile":"666666666","dni":"48642143H"},"products":[{"reference":"KAS000478","quantity":"1"}]}
-        //http://www.prestashop.local/prestashop/es/module/pqkasnormegafeedorders/connectkasnor?data={%22email%22:%22miguel@prestaquality.com%22,%22address%22:{%22id%22:5,%22country%22:%22Espa%C3%B1a%22,%22lastname%22:%22Ruiz%22,%22firstname%22:%22Miguek%22,%22address1%22:%22qdwqd%22,%22address2%22:%22%22,%22postcode%22:%2203370%22,%22city%22:%22Redovan%22,%22phone%22:%22666666666%22,%22phone_mobile%22:%22666666666%22,%22dni%22:%2248642143H%22},%22products%22:[{%22reference%22:%22KAS000478%22,%22quantity%22:%221%22}]}
+        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={%22email%22:%22miguel@prestquality.com%22,%22address%22:{%22id%22:5,%22country%22:%22Espa\u00f1a%22,%22id_country%22:%226%22,%22id_state%22:%22316%22,%22iso_country%22:%22ES%22,%22iso_state%22:%22ES-A%22,%22other%22:%22%22,%22lastname%22:%22Ruiz%22,%22firstname%22:%22Miguek%22,%22address1%22:%22qdwqd%22,%22address2%22:%22%22,%22postcode%22:%2203370%22,%22city%22:%22Redovan%22,%22phone%22:%22666666666%22,%22phone_mobile%22:%22666666666%22,%22dni%22:%2248642143H%22},%22products%22:[{%22reference%22:%22KAS8023820%22,%22quantity%22:%221%22}]}        //http://www.prestashop.local/prestashop/es/module/pqkasnormegafeedorders/connectkasnor?data={%22email%22:%22miguel@prestaquality.com%22,%22address%22:{%22id%22:5,%22country%22:%22Espa%C3%B1a%22,%22lastname%22:%22Ruiz%22,%22firstname%22:%22Miguek%22,%22address1%22:%22qdwqd%22,%22address2%22:%22%22,%22postcode%22:%2203370%22,%22city%22:%22Redovan%22,%22phone%22:%22666666666%22,%22phone_mobile%22:%22666666666%22,%22dni%22:%2248642143H%22},%22products%22:[{%22reference%22:%22KAS000478%22,%22quantity%22:%221%22}]}
         $data = array("order" => $order);
 
         $ch = curl_init( $this->url );

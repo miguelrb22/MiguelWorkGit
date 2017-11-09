@@ -1,0 +1,7 @@
+2017-11-09 11:44:18 Error El usuario miguel@prestaquality.com ha intentado obtener el ISO del pais  ES y este no se ha encontrado
+2017-11-09 11:44:38 Error El usuario miguel@prestaquality.com ha intentado obtener el ISO del pais  ES y este no se ha encontrado
+2017-11-09 11:44:52 Error El usuario miguel@prestaquality.com ha intentado obtener el ISO del pais  ES y este no se ha encontrado
+2017-11-09 11:55:22 Error El usuario miguel@prestaqauality.com ha intentado obtener el ISO del estado  y este no se ha encontrado
+2017-11-09 11:56:28 Error El usuario miguel@prestaqauality.com ha entrado con un pedido, pero este usuario no se encuentra como cliente Kasnor
+2017-11-09 12:02:34 Error El usuario miguel@prestaqauality.com ha entrado con un pedido, pero la direccion no se encuentra o no se ha podido crear {"id":5,"country":"Espau00f1a","id_country":"6","id_state":"316","iso_country":"ES","iso_state":"ES-A","other":"","lastname":"Ruiz","firstname":"Miguek","address1":"qdwqd","address2":"","postcode":"03370","city":"Redovan","phone":"666666666","phone_mobile":"666666666","dni":"48642143H"}
+2017-11-09 12:09:22 Error El usuario miguel@prestaqauality.com ha entrado con un pedido, pero este usuario no se encuentra como cliente Kasnor

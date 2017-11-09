@@ -1,15 +1,12 @@
 <?php
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Miguel Ruiz
  */
 
-/**
- * Description of connectkasnor
- *
- * @author dani
- */
+
+require_once(_PS_MODULE_DIR_ . '/pqkasnormegafeedorders/exceptions/customexceptions.php');
+require_once(_PS_MODULE_DIR_ . '/pqkasnormegafeedorders/lib/loghelper.php');
+
 class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFrontController
 {
 
@@ -44,95 +41,135 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
     public function postProcess()
     {
 
+        try {
 
-        $email = $this->data["email"];
-        $address = $this->data["address"];
-        $products = $this->data["products"];
+            $email = $this->data["email"];
+            $address = $this->data["address"];
+            $products = $this->data["products"];
 
-        if (isset($email) && !empty($email) && isset($address) && !empty($address) && isset($products) && !empty($products)) {
+            if (isset($email) && !empty($email) && isset($address) && !empty($address) && isset($products) && !empty($products)) {
 
-            $customer = $this->getCustomerByEmail($email);
+                $customer = $this->getCustomerByEmail($email);
+                
+                if (Validate::isLoadedObject($customer)) {
 
-            if (Validate::isLoadedObject($customer)) {
+                    $_address = $this->getAdressByAlias($email . $address["id"]);
 
-                $_address = $this->getAdressByAlias($email . $address["id"]);
+                    if (!Validate::isLoadedObject($_address)) {
 
-                if ($_address == null) {
+                        $iso_country = $address["iso_country"];
 
-                    $_address = new AddressCore();
-                    $_address->id_customer = $customer->id;
-                    $_address->alias = $email . $address["id"];
-                    $_address->country = $address["country"];
-                    $_address->id_country = $address["id_country"];
-                    $_address->id_state = $address["id_state"];
-                    $_address->other = $address["other"];
-                    $_address->lastname = $address["lastname"];
-                    $_address->firstname = $address["firstname"];
-                    $_address->address1 = $address["address1"];
-                    $_address->address2 = $address["address2"];
-                    $_address->postcode = $address["postcode"];
-                    $_address->city = $address["city"];
-                    $_address->phone = $address["phone"];
-                    $_address->phone_mobile = $address["phone_mobile"];
-                    $_address->dni = $address["dni"];
-                    $_address->
-                    $_address->save();
+                        $iso_state = $address["iso_state"];
 
-                }
+                        $country = $this->getCountryByIso($iso_country);
 
-                if (Validate::isLoadedObject($_address)) {
+                        $state = $this->getStateByIso($address["id_country"], $iso_state);
+
+                        if (!Validate::isLoadedObject($country)) throw new ISOCountryNotFoundException("Error");
+
+                        if (!Validate::isLoadedObject($state)) throw new ISOStateNotFoundException("Error");
 
 
-                    //Creamos un nuevo carro
-                    $cart = new Cart();
-                    //Le ponemos los datos
-                    $cart->id_currency = (new Currency(Configuration::get('PS_CURRENCY_DEFAULT')))->id;
-                    $cart->id_shop = Context::getContext()->shop->id;
-                    $cart->id_shop_group = Context::getContext()->shop->id_shop_group;
-                    $cart->id_customer = $customer->id;
-                    $cart->id_address_delivery = $_address->id;
-                    $cart->id_address_invoice = $_address->id;
+                        $_address = new Address();
+                        $_address->id_customer = $customer->id;
+                        $_address->alias = $email . $address["id"];
+                        $_address->country = $address["country"];
+                        $_address->id_country = $address["id_country"];
+                        $_address->id_state = $address["id_state"];
+                        $_address->other = $address["other"];
+                        $_address->lastname = $address["lastname"];
+                        $_address->firstname = $address["firstname"];
+                        $_address->address1 = $address["address1"];
+                        $_address->address2 = $address["address2"];
+                        $_address->postcode = $address["postcode"];
+                        $_address->city = $address["city"];
+                        $_address->phone = $address["phone"];
+                        $_address->phone_mobile = $address["phone_mobile"];
+                        $_address->dni = $address["dni"];
+                        $_address->save();
 
-
-                    if ($cart->id_customer) {
-                        $customer = new Customer($customer->id);
-                        $cart->secure_key = $customer->secure_key;
                     }
-                    //Guardamos el carro
-                    $cart->save();
 
-                    foreach ($products as $product) {
+                    if (Validate::isLoadedObject($_address)) {
 
-                        $reference = $product["reference"];
-                        $quantity = $product["quantity"];
-                        //$reference = str_replace("KAS","",$reference); // TODO DESCOMENTAR EN PRODUCCION
+                        //Creamos un nuevo carro
+                        $cart = new Cart();
+                        //Le ponemos los datos
+                        $cart->id_currency = (new Currency(Configuration::get('PS_CURRENCY_DEFAULT')))->id;
+                        $cart->id_shop = Context::getContext()->shop->id;
+                        $cart->id_shop_group = Context::getContext()->shop->id_shop_group;
+                        $cart->id_customer = $customer->id;
+                        $cart->id_address_delivery = $_address->id;
+                        $cart->id_address_invoice = $_address->id;
 
-                        $_product = $this->getProductByReference($reference);
 
-                        if ($_product != null) {
-
-                           $cart->updateQty($quantity, $_product->id);
-
+                        if ($cart->id_customer) {
+                            $customer = new Customer($customer->id);
+                            $cart->secure_key = $customer->secure_key;
                         }
+                        //Guardamos el carro
+                        $cart->save();
+
+                        foreach ($products as $product) {
+
+                            $reference = $product["reference"];
+                            $quantity = $product["quantity"];
+                            //$reference = str_replace("KAS","",$reference); // TODO DESCOMENTAR EN PRODUCCION
+
+                            $_product = $this->getProductByReference($reference);
+
+                            if ($_product != null) {
+
+                                $cart->updateQty($quantity, $_product->id);
+
+                            }
+                        }
+
+                        //TODO BERTO ESTO HACE FALTA?
+                        //Añadimos vales descuento
+                        /*$context = Context::getContext()->cloneContext();
+                        $context->cart = $cart;
+                        Cache::clean('getContextualValue_*');
+                        CartRule::autoAddToCart($context);*/
+
+                        Context::getContext()->cart = $cart;
+                        //Validamos el pedido
+                        $payment_module = new LoaderOrder();
+                        $payment_module->validateOrder(
+                            (int)$cart->id, 2,
+                            $cart->getOrderTotal(true, Cart::BOTH), $payment_module->displayName, 'Loader Order', array(), null, false, $cart->secure_key
+                        );
+
+                    } else {
+
+                        throw new KasnorCustomerNotAllowedException("Error");
+
                     }
+                } else {
 
-                    //TODO BERTO ESTO HACE FALTA?
-                    //Añadimos vales descuento
-                    /*$context = Context::getContext()->cloneContext();
-                    $context->cart = $cart;
-                    Cache::clean('getContextualValue_*');
-                    CartRule::autoAddToCart($context);*/
-
-                    Context::getContext()->cart = $cart;
-                    //Validamos el pedido
-                    $payment_module = new LoaderOrder();
-                    $payment_module->validateOrder(
-                        (int)$cart->id, 2,
-                        $cart->getOrderTotal(true, Cart::BOTH), $payment_module->displayName, 'Loader Order', array(), null, false, $cart->secure_key
-                    );
-
+                    throw new KasnorCustomerNotAllowedException("Error");
                 }
             }
+
+        } catch (AddressNotValidException $e) {
+
+            LogHelper::Log("Error", "El usuario {$email} ha entrado con un pedido, pero la direccion no se encuentra o no se ha podido crear " . json_encode($address));
+
+        } catch (KasnorCustomerNotAllowedException $e) {
+
+            LogHelper::Log("Error", "El usuario {$email} ha entrado con un pedido, pero este usuario no se encuentra como cliente Kasnor", $e->getPrevious());
+
+        } catch (ISOCountryNotFoundException $e) {
+
+            LogHelper::Log("Error", "El usuario {$email} ha intentado obtener el ISO del pais  {$iso_country} y este no se ha encontrado", $e->getPrevious());
+
+        } catch (ISOStateNotFoundException $e) {
+
+            LogHelper::Log("Error", "El usuario {$email} ha intentado obtener el ISO del estado {$iso_state} y este no se ha encontrado");
+
+        } catch (Exception $e) {
+
+            LogHelper::Log("Error", $e->getMessage());
         }
     }
 
@@ -201,7 +238,8 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
     }
 
 
-    public function getCountryByIso($iso){
+    public function getCountryByIso($iso)
+    {
 
         $sql = 'SELECT *
                 FROM `' . _DB_PREFIX_ . 'country`
@@ -217,7 +255,8 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
         return null;
     }
 
-    public function getStateByIso($id_country, $iso){
+    public function getStateByIso($id_country, $iso)
+    {
 
         $sql = 'SELECT *
                 FROM `' . _DB_PREFIX_ . 'state`
