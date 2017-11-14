@@ -1,0 +1,1 @@
+Se ha producido un error mientras realizaba un pago de {amount} {currency} con el concepto: {description} a {shop_name}.

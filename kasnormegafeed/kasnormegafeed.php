@@ -183,12 +183,10 @@ class Kasnormegafeed extends Module
                 }
 
             }
-            //CONTROLAMOS QUE ESTÁ INSTALADO EL OTRO MÓDULO
-            /* "/module/pqkasnormegafeedorders/connectkasnor" */
 
 
-            ddd(json_encode($json_array));
-            die();
+            //ddd(json_encode($json_array));
+
             $result = $this->kasnorOrderRequest(json_encode($json_array));
 
         }

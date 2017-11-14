@@ -1,0 +1,78 @@
+#module-redsysdeferred-payment #left_column,
+#module-redsysdeferred-payment #right_column,
+#module-redsysdeferred-paymentko #left_column,
+#module-redsysdeferred-paymentko #right_column,
+#module-redsysdeferred-paymentok #left_column,
+#module-redsysdeferred-paymentok #right_column {
+	display: none;
+}
+#module-redsysdeferred-payment #center_column,
+#module-redsysdeferred-paymentko #center_column,
+#module-redsysdeferred-paymentok #center_column {
+	width: 100%
+}
+
+#module-redsysdeferred-payment #center_column h4 {
+	width: auto;
+	margin: 20px 0;
+	padding: 0;
+}
+
+#module-redsysdeferred-paymentko .redsysdeferred_ko h1 {
+	border: 1px solid #990000;
+	color:#383838;
+	background: #FFCCCC url(../img/icon-cancel.png) no-repeat 10px center;
+	padding: 10px 10px 10px 50px;
+}
+
+#module-redsysdeferred-paymentok .redsysdeferred_ok h1 {
+	border: 1px solid #4F8A10;
+	color:#4F8A10;
+	background: #DFF2BF url(../img/icon-valid.png) no-repeat 10px center;
+	padding: 10px 10px 10px 50px;
+}
+
+#module-redsysdeferred-payment .redsysdeferred fieldset {
+	padding: 15px 0;
+	border: 1px solid #ccc;
+	background: #f8f8f8;
+}
+
+#module-redsysdeferred-payment .redsysdeferred form {
+	margin-bottom: 20px;
+}
+
+#module-redsysdeferred-payment #center_column p.text label,
+#module-redsysdeferred-payment #center_column p.select label,
+#module-redsysdeferred-payment #center_column p.select span,
+#module-redsysdeferred-payment #center_column p.textarea label {
+	display: inline-block;
+	padding: 6px 15px;
+	width: 40%;
+	font-size: 12px;
+	text-align: right;
+}
+
+#module-redsysdeferred-payment p.text input,
+#module-redsysdeferred-payment p.select input {
+	padding: 0 5px;
+	height: 22px;
+	border: 1px solid #ccc;
+	font-size: 12px;
+	color: #666;
+	max-width: 50%;
+}
+
+#module-redsysdeferred-payment #center_column p.submit {
+	text-align: center;
+	margin-top: 20px;
+}
+
+#module-redsysdeferred-payment #center_column input.button_large {
+	padding: 5px 15px;
+}
+/*
+#module-redsysdeferred-payment #center_column p.submit {
+	display: inline-block;
+}
+*/

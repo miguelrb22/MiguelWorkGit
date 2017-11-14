@@ -1,0 +1,3 @@
+Ha efectuado un pago de {amount} {currency} con el concepto: {description} a {shop_name}.
+
+Referencia: {data}

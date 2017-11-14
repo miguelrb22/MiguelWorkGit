@@ -1,0 +1,9 @@
+Se ha efectuado un pago de {amount} {currency} con los siguientes datos:
+
+Nombre: {name}
+
+Correo electrónico: {mail}
+
+Concepto: {description}
+
+Información: {data}

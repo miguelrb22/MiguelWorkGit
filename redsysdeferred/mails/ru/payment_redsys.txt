@@ -1,0 +1,9 @@
+There's been a payment of {amount} {currency} with the following data:
+
+Name: {name}
+
+Mail address: {mail}
+
+Description: {description}
+
+Full information: {data}

@@ -6,6 +6,8 @@
 
 require_once(_PS_MODULE_DIR_ . '/pqkasnormegafeedorders/exceptions/customexceptions.php');
 require_once(_PS_MODULE_DIR_ . '/pqkasnormegafeedorders/lib/loghelper.php');
+require_once(_PS_MODULE_DIR_ . '/pqkasnormegafeedorders/classes/PQKasnorMegaFeedOrderUrl.php');
+
 
 class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFrontController
 {
@@ -14,26 +16,20 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
     public function __construct()
     {
-
         parent::__construct();
-
     }
 
 
     public function init()
     {
-
         $data = Tools::getValue("data");
-
         $data = json_decode($data, true);
-
         $this->data = $data;
 
         if (_PS_VERSION_ > "1.7.0") {
 
             $this->setTemplate('module:pqkasnormegafeedorders/views/templates/front/result.tpl');
         }
-
         parent::init();
     }
 
@@ -50,7 +46,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
             if (isset($email) && !empty($email) && isset($address) && !empty($address) && isset($products) && !empty($products)) {
 
                 $customer = $this->getCustomerByEmail($email);
-                
+
                 if (Validate::isLoadedObject($customer)) {
 
                     $_address = $this->getAdressByAlias($email . $address["id"]);
@@ -92,6 +88,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
                     if (Validate::isLoadedObject($_address)) {
 
+
                         //Creamos un nuevo carro
                         $cart = new Cart();
                         //Le ponemos los datos
@@ -125,25 +122,48 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                             }
                         }
 
-                        //TODO BERTO ESTO HACE FALTA?
-                        //Añadimos vales descuento
-                        /*$context = Context::getContext()->cloneContext();
-                        $context->cart = $cart;
-                        Cache::clean('getContextualValue_*');
-                        CartRule::autoAddToCart($context);*/
 
                         Context::getContext()->cart = $cart;
+
                         //Validamos el pedido
                         $payment_module = new LoaderOrder();
-                        $payment_module->validateOrder(
-                            (int)$cart->id, 2,
+                        $orderCreated = $payment_module->validateOrder(
+                            (int)$cart->id, 14,
                             $cart->getOrderTotal(true, Cart::BOTH), $payment_module->displayName, 'Loader Order', array(), null, false, $cart->secure_key
                         );
+
+
+                        //si el pedido se crea correctamente
+                        if ($orderCreated) {
+
+                            $order = $this->orderByCart($cart->id);
+
+                            if(isset($order)){
+
+                                //1- Se genera la url de pago
+                                $payment_url = $this->generatePaymentUrl($order);
+
+                                $customer = new Customer($order->id_customer);
+
+                                //2- Se envia un email
+                                $mailed =  Mail::Send($this->context->language->id, 'dropshipping_confirmation', Mail::l('New Order Created', $this->context->language->id), array('{url}' => $payment_url), $email, $customer->firstname, null, "Kasnor", null, null, _PS_MAIL_DIR_, false, $this->context->shop->id);
+
+                                // si se ha enviado el email se inserta la url con su id order
+                                if($mailed){
+
+                                    $order_url = new PQKasnorMegaFeedOrderUrl();
+                                    $order_url->url = $payment_url;
+                                    $order_url->id_order = $order->id;
+                                    $order_url->save();
+
+                                }
+                            }
+                        }
+
 
                     } else {
 
                         throw new KasnorCustomerNotAllowedException("Error");
-
                     }
                 } else {
 
@@ -273,15 +293,51 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
         return null;
 
     }
+
+    /**
+     * Devuelve el orden del carrito
+     * @param $cart
+     * @return null|Order
+     */
+    public function orderByCart($cart)
+    {
+
+        $order = Db::getInstance()->getRow('SELECT * FROM `' . _DB_PREFIX_ . 'orders` WHERE `id_cart` = ' . (int)$cart);
+
+        if (isset($order) && !empty($order)) {
+
+            return new Order($order['id_order']);
+        }
+
+        return null;
+
+    }
+
+    private function generatePaymentUrl($order)
+    {
+
+        $customer = new Customer($order->id_customer);
+        $prefix = _PS_BASE_URL_. __PS_BASE_URI__."module/redsysdeferred/payment?";
+        $a = "a=" . $order->total_paid_tax_incl;
+        $c = "&c=" . $order->id_currency;
+        $n = "&n=" . $customer->firstname;
+        $d = "&d=" . "Dropshipping";
+        $m = "&m=" . $customer->email;
+        $token = "&z=" . sha1(uniqid('kasnor'))."-" . $order->id;
+
+        $url = $prefix.$a.$c.$n.$d.$m.$token;
+
+        return $url;
+    }
 }
 
 class LoaderOrder extends PaymentModule
 {
     public $active = 1;
-    public $name = 'loader_order';
+    public $name = 'dropshipping_order';
 
     public function __construct()
     {
-        $this->displayName = $this->l('Loader order');
+        $this->displayName = $this->l('Dropshipping order');
     }
 }

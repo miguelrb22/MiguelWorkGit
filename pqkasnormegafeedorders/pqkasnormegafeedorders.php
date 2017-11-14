@@ -54,6 +54,8 @@ class pqkasnormegafeedorders extends Module
     {
         try {
 
+            include(dirname(__FILE__) . '/sql/install.php');
+
             $correct = parent::install();
 
             return $correct;
@@ -66,6 +68,9 @@ class pqkasnormegafeedorders extends Module
 
     public function uninstall()
     {
+
+        include(dirname(__FILE__) . '/sql/uninstall.php');
+
 
         return parent::uninstall();
     }

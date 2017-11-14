@@ -1,0 +1,1 @@
+There has been an error while you tried to do a payment of {amount} {currency} with description: {description} to {shop_name}.
