@@ -125,6 +125,13 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
                         Context::getContext()->cart = $cart;
 
+                        //TODO BERTO ESTO HACE FALTA?
+                        //Añadimos vales descuento
+                        /*$context = Context::getContext()->cloneContext();
+                        $context->cart = $cart;
+                        Cache::clean('getContextualValue_*');
+                        CartRule::autoAddToCart($context);*/
+
                         //Validamos el pedido
                         $payment_module = new LoaderOrder();
                         $orderCreated = $payment_module->validateOrder(

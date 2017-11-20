@@ -17,6 +17,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'redsysdeferred_historic_url
 `url` text NOT NULL,
 `date_upd` datetime NOT NULL,
 `paid` TINYINT(1) NOT NULL default 0,
+`id_order` int(10) unsigned NOT NULL default 0,
+`isdrop` TINYINT(1) NOT NULL default 0,
 PRIMARY KEY  (`id_historic`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 

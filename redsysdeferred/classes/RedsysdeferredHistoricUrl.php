@@ -12,6 +12,8 @@ class RedsysdeferredHistoricUrl extends ObjectModel
     public $url;
     public $date_upd;
     public $paid;
+    public $id_order;
+    public $isdrop;
 
 
     /**
@@ -23,8 +25,9 @@ class RedsysdeferredHistoricUrl extends ObjectModel
         'fields' => array(
             'url' => array('type' => self::TYPE_STRING),
             'date_upd' => array('type' => self::TYPE_DATE),
-            'paid' => array('type' => self::TYPE_DATE),
-
+            'paid' => array('type' => self::TYPE_BOOL),
+            'id_order' => array('type' => self::TYPE_INT),
+            'isdrop' => array('type' => self::TYPE_BOOL),
         )
     );
 
@@ -54,12 +57,26 @@ class RedsysdeferredHistoricUrl extends ObjectModel
 
         $data = $this->getByUrl($url);
 
+        $aux = explode("&z=", $url);
+        $aux = $aux[1];
+        $aux = explode("-", $aux);
+
+        if (isset($aux[1]))
+            $aux = $aux[1];
+        else $aux = null;
+
         if (empty($data)) {
 
             $historic = new RedsysdeferredHistoricUrl();
             $historic->url = $url;
             $historic->date_upd = date('Y-m-d H:i:s');
             $historic->paid = false;
+
+            if (isset($aux) && !empty($aux)) {
+
+                $historic->id_order = (int)$aux;
+                $historic->isdrop = true;
+            }
             $historic->save();
 
         } else {
@@ -90,6 +107,12 @@ class RedsysdeferredHistoricUrl extends ObjectModel
             $historic->date_upd = date('Y-m-d H:i:s');
             $historic->paid = true;
             $historic->save();
+        }
+
+        if($historic->isdrop){
+
+            $order = new Order($historic->id_order);
+            $order->setCurrentState(2);
         }
 
     }
