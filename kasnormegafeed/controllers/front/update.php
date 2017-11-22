@@ -28,6 +28,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
      */
     public function init()
     {
+
         $this->products_url = Configuration::get('KASNORMEGAFEED_URL_PRODUCT');
 
         $this->stocks_url = Configuration::get('KASNORMEGAFEED_URL_STOCK');
@@ -52,13 +53,20 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             throw new Exception("No hay categoría por defecto configurada");
 
 
+
         if ($action == KasnorMegaFeedUpdateModuleFrontController::PRODUCT) {
+
+            file_put_contents("log.txt", date("H:i:s") . "creando arboles...\n", FILE_APPEND);
 
             $this->upCategoryTree($parent); // inicializar arbol de categorias
 
             $this->upAttributesTree();
 
+            file_put_contents("log.txt", date("H:i:s") . "arboles creados...\n", FILE_APPEND);
+
+
             $this->processProducts();
+
         } else if ($action == KasnorMegaFeedUpdateModuleFrontController::STOCKS) {
 
             $this->processStocks();
@@ -75,8 +83,17 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     private function processProducts()
     {
 
-        //Se intenta actualizar el archivo descargandolo del servidor
-        $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
+        $offset = Tools::getValue("koffset",null);
+        $result = true;
+
+        if(!isset($offset)) {
+            //Se intenta actualizar el archivo descargandolo del servidor
+            $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
+
+            file_put_contents("log.txt", "Actualizando archivo...". "\n", FILE_APPEND);
+
+        }
+
 
         if (!$result)
             return false;
@@ -96,10 +113,22 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $i = 0;
 
+
+        if(isset($offset)) {
+
+            $datas = array_slice($datas, $offset);
+
+            file_put_contents("log.txt", date("H:i:s") . " " . $offset . " " . count($datas) . "\n", FILE_APPEND);
+
+        }else{
+
+            file_put_contents("log.txt", date("H:i:s")  . " " . count($datas). "\n", FILE_APPEND);
+
+        }
+
         //recorremos los datos
         foreach ($datas as $data) {
 
-            $i++;
 
             $reference = "KAS" . $data['reference'];
 
@@ -129,12 +158,35 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
 
             //DANGER DANGER: TODO BORRAR EN PRODUCCION
-            if ($i > 200) {
+            if ($i >= 2) {
 
-                Search::indexation(1);
+                $request_url = $_SERVER['REQUEST_URI'];
 
-                die();
+                if (strpos($request_url,'&koffset') == false) {
+
+                    $url = "{$request_url}&koffset={$i}";
+
+
+                } else {
+
+                    $offset = Tools::getValue("koffset");
+
+                    $offset = $offset + $i;
+
+                    $aux = explode("?", $request_url);
+
+                    $url = $aux[0] ."?action=products&koffset={$offset}";
+
+
+                }
+
+                header("Location: {$url}", true, 301);
+                exit();
+
             }
+
+            $i++;
+
         }
 
         Context::getContext()->shop->setContext(Shop::CONTEXT_SHOP, (int) Tools::getValue('id_shop'));
@@ -457,7 +509,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         foreach ($images as $image) {
 
             if (!empty($image)) {
-                $this->setImage($product->id, array($shop), $image, $cover);
+                //$this->setImage($product->id, array($shop), $image, $cover);
                 $cover = false;
             }
         }
@@ -495,6 +547,9 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
             $combi->price = $resume['price'];
             $combi->save();
         }
+
+        file_put_contents("log.txt", date("H:i:s") . "creado producto {$product->name[Context::getContext()->language->id]}" . "\n", FILE_APPEND);
+
     }
 
     /**
