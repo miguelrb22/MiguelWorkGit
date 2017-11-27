@@ -45,6 +45,14 @@ class AdminRedsysdeferredHistoricController extends ModuleAdminController
                 'name' => 'paided',
                 'align' => 'text-right pagado',
                 'order_by' => true
+            ),
+
+            'isdrop' => array(
+                'title' => $this->l('Dropshipping'),
+                'type' => 'text',
+                'name' => 'isdrop',
+                'align' => 'text-right isdrop',
+                'order_by' => true
             )
         );
 

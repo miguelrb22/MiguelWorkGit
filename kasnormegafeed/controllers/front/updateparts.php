@@ -84,12 +84,16 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
     private function processProducts()
     {
 
+        $offset = Tools::getValue("koffset",null);
         $result = true;
 
-        //Se intenta actualizar el archivo descargandolo del servidor
-        $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
+        if(!isset($offset)) {
+            //Se intenta actualizar el archivo descargandolo del servidor
+            $result = $this->updateFile(KasnorMegaFeedUpdateModuleFrontController::PRODUCT);
 
-        file_put_contents("log.txt", "Actualizando archivo...". "\n", FILE_APPEND);
+            file_put_contents("log.txt", "Actualizando archivo...". "\n", FILE_APPEND);
+
+        }
 
 
         if (!$result)
@@ -110,6 +114,18 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         $i = 0;
 
+
+        if(isset($offset)) {
+
+            $datas = array_slice($datas, $offset);
+
+            file_put_contents("log.txt", date("H:i:s") . " " . $offset . " " . count($datas) . "\n", FILE_APPEND);
+
+        }else{
+
+            file_put_contents("log.txt", date("H:i:s")  . " " . count($datas). "\n", FILE_APPEND);
+
+        }
 
         //recorremos los datos
         foreach ($datas as $data) {
@@ -139,6 +155,35 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 }
 
                 $this->createProduct($data, $parent);
+            }
+
+
+            //DANGER DANGER: TODO BORRAR EN PRODUCCION
+            if ($i >= 2) {
+
+                $request_url = $_SERVER['REQUEST_URI'];
+
+                if (strpos($request_url,'&koffset') == false) {
+
+                    $url = "{$request_url}&koffset={$i}";
+
+
+                } else {
+
+                    $offset = Tools::getValue("koffset");
+
+                    $offset = $offset + $i;
+
+                    $aux = explode("?", $request_url);
+
+                    $url = $aux[0] ."?action=products&koffset={$offset}";
+
+
+                }
+
+                header("Location: {$url}", true, 301);
+                exit();
+
             }
 
             $i++;
@@ -465,7 +510,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
         foreach ($images as $image) {
 
             if (!empty($image)) {
-                $this->setImage($product->id, array($shop), $image, $cover);
+                //$this->setImage($product->id, array($shop), $image, $cover);
                 $cover = false;
             }
         }
@@ -564,6 +609,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
      */
     public function getOrCreateAttribute($group, $name, $color = 0, $default = 0)
     {
+
 
         //atributos del grupo
         $group_in_tree = $this->attributes_tree[$group]['attributes'];
@@ -763,7 +809,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         //Recorremos cada linea
         foreach ($data as $data_row) {
-            //Bucamos la correspondencia 
+            //Bucamos la correspondencia
             $product_find = array_filter($comb_db, function($r)use($data_row) {
                 return $r['reference'] == ('KAS' . $data_row['reference']);
             });
@@ -821,7 +867,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $product_obj->save();
             }
         }
-        
+
         //Stock
         $current_stock = StockAvailable::getQuantityAvailableByProduct($idp,$ipa);
         //Si el stock es distinto al nuevo, actualizamos (evitamos el lanzamiento de hooks)
