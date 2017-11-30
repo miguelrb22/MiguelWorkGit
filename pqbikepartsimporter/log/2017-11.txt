@@ -1,2 +1,27 @@
 2017-11-29 12:40:49 Info Sincronizando productos...
 2017-11-29 12:44:14 Info: Sincronizando productos... Origin ::1
+2017-11-30 06:59:31 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 06:59:48 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 06:59:50 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:00:10 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:01:35 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:01:43 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:02:11 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:02:34 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:02:44 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:03:01 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:03:48 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:03:48 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\controllers\front\cron.php:63 -> Warning: Illegal string offset 'data' Origin 127.0.0.1
+2017-11-30 07:05:27 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:11:26 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:13:12 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:13:31 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:13:48 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:15:10 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:15:41 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:15:41 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\controllers\front\cron.php:63 -> Notice: Use of undefined constant json - assumed 'json' Origin 127.0.0.1
+2017-11-30 07:16:01 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:16:25 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:18:04 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:20:25 Info: Sincronizando categorias... Origin 127.0.0.1
+2017-11-30 07:20:59 Info: Sincronizando categorias... Origin 127.0.0.1

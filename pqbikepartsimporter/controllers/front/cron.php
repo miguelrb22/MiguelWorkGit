@@ -10,11 +10,14 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 {
 
     private $action;
+    private $key;
+    private $pass;
 
     public function __construct()
     {
         parent::__construct();
         require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/helper/loghelper.php');
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/lib/bikepartswebserviceclient.php');
     }
 
     public function init()
@@ -42,16 +45,25 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 
         } catch (Exception $ex) {
 
-            $this->module->logException($ex);
+            LogHelper::LogException($ex);
 
         }
 
     }
 
 //http://localhost/prestashop6/es/module/pqbikepartsimporter/cron?action=categories
+//http://www.prestashop.local/prestashop/es/module/pqbikepartsimporter/cron?action=categories
     public function categoriesSynchronizeBPMethod(){
 
-        LogHelper::Log("Info", "Sincronizando categorias...");
+        if($this->isLoggedIn()) {
+            $url = BikePartsWebServiceClient::buildURLforCategory($this->key, $this->pass);
+            $response = BikePartsWebServiceClient::requestXML($url);
+            LogHelper::Log("Info", "Sincronizando categorias...");
+
+            $categories = ($response['data']);
+            dump($this->xml2array($categories));
+            die();
+        }
 
     }
 
@@ -59,6 +71,25 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
     public function productsSynchronizeBPMethod(){
 
         LogHelper::Log("Info", "Sincronizando productos...");
+
+    }
+
+    public function isLoggedIn()
+    {
+        $this->key = Configuration::get('BKP_KEY');
+        $this->pass = Configuration::get('BKP_PASS');
+
+        if (isset($this->key) && isset($this->pass) && !empty($this->key) && !empty($this->pass)) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function xml2array ( $xmlObject)
+    {
+        return json_decode(json_encode((array) ($xmlObject)), 1);
 
     }
 }

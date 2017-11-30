@@ -25,75 +25,94 @@ class PqBikepartsImporter extends Module
         $this->description = $this->l('Bike parts importer');
     }
 
+
+    public function install()
+    {
+        if (parent::install() == false) {
+            return false;
+        } else {
+            include(dirname(__FILE__) . '/sql/install.php');
+        }
+        return true;
+    }
+
+    public function uninstall()
+    {
+        if (parent::uninstall() == false) {
+            return false;
+        } else {
+            include(dirname(__FILE__) . '/sql/uninstall.php');
+        }
+        return true;
+    }
+
     public function getContent()
     {
-
         $this->postProcess();
         $logged = $this->isLoggedIn();
-        Context::getContext()->controller->addJs(__PS_BASE_URI__ . 'modules/pqbikepartsimporter/views/js/pqbikepartsimporter.js');
-        return $this->renderMainSettingsForm($logged);
-        
+
+        //Context::getContext()->controller->addJs(__PS_BASE_URI__ . 'modules/pqbikepartsimporter/views/js/pqbikepartsimporter.js');
+
+        if($logged) {
+
+            $this->context->smarty->assign(array(
+                'pq_bike_form1' => $this->renderGeneralSettingsForm(),
+                'pq_bike_form2' => $this->renderGeneralSettingsForm(),
+                'pq_bike_form3' => $this->renderGeneralSettingsForm()
+            ));
+
+            return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');
+
+        } else {
+            return $this->renderLoginForm();
+        }
     }
 
     public function postProcess()
     {
 
-;
         if (Tools::isSubmit('submitBKPLogin')) {
-            
-            $user = Tools::getValue('BKP_KEY');
-            $pass = Tools::getValue('BKP_PASS');
 
-            $this->linkUp($user, $pass);
-            
-        } else if(Tools::isSubmit('submitBKPLogout')){
+            $key  = Tools::getValue(self::PQ_KEY_CK);
+            $pass = Tools::getValue(self::PQ_PASS_CK);
+
+            $this->linkUp($key, $pass);
+
+        } else if (Tools::isSubmit('submitBKPLogout')) {
 
             $this->logout();
+
+        } else if (Tools::isSubmit('submitBKPGeneralSettings')){
+
+            $comision = Tools::getValue(self::PQ_BKP_COMMISSION_CK);
+            $tiempo_adicional = Tools::getValue(self::PQ_BKP_ADDITIONAL_TIME_CK);
+            $desabilitado = Tools::getValue(self::PQ_BKP_DEFAULT_STATUS_CK);
+
+
+            if(empty($comision) || empty($tiempo_adicional)  || empty($desabilitado)){
+
+                $this->context->controller->errors[] = ($this->l('All inputs are required'));
+                return;
+            }
+
+            if(!is_numeric($comision) || !is_numeric($tiempo_adicional)  || !is_numeric($desabilitado)){
+
+                $this->context->controller->errors[] = ($this->l('All inputs must be integer'));
+                return;
+            }
+
+            Configuration::updateValue(self::PQ_BKP_COMMISSION_CK, $comision);
+            Configuration::updateValue(self::PQ_BKP_ADDITIONAL_TIME_CK, $tiempo_adicional);
+            Configuration::updateValue(self::PQ_BKP_DEFAULT_STATUS_CK, $desabilitado);
+
+            $this->context->controller->confirmations[] = ($this->l('Settings updated succesfull'));
+
         }
-        
-        if (!empty(Tools::getValue('saveBKPCategories'))) {
-           
-            $comission = strval(Tools::getValue('BKP_COMMISSION'));
-            if (!$comission || empty($comission) || !Validate::isGenericName($comission))
-            {
-                $this->context->controller->errors[]=($this->l('Invalid comission value.'));
-            }
-            else
-            {
-                Configuration::updateValue(self::PQ_BKP_COMMISSION_CK, $comission);
-                $this->context->controller->confirmations[]= ($this->l('Comission updated.'));
-            }
-            
-            $additional_time = strval(Tools::getValue('BKP_ADDITIONAL_TIME'));
-            if (!$additional_time || empty($additional_time) || !Validate::isGenericName($additional_time))
-            {
-                $this->context->controller->errors[]=($this->l('Invalid additional time value.'));
-            }
-            else
-            {
-                Configuration::updateValue(self::PQ_BKP_ADDITIONAL_TIME_CK, $additional_time);
-                $this->context->controller->confirmations[]= ($this->l('Aditional time updated.'));
-            }
-            
-            $default_status = strval(Tools::getValue('BKP_DEFAULT_STATUS'));
-            if($default_status == 'yes')
-            {
-                $default_status = 'true';
-            }
-            else
-            {
-                $default_status = 'false';
-            }
-            if (!$default_status || empty($default_status) || !Validate::isGenericName($default_status))
-            {
-                $this->context->controller->errors[]=($this->l('Invalid default status value.'));
-            }
-            else
-            {
-                Configuration::updateValue(self::PQ_BKP_DEFAULT_STATUS_CK, $default_status);
-                $this->context->controller->confirmations[]= ($this->l('Default status updated.'));
-            }
-            
+
+        else if (!empty(Tools::getValue('saveBKPCategories'))) {
+
+
+
         }
 
     }
@@ -108,7 +127,7 @@ class PqBikepartsImporter extends Module
         $key = Configuration::get(self::PQ_KEY_CK);
         $pass = Configuration::get(self::PQ_PASS_CK);
 
-        if(isset($key) && isset($pass) && !empty($key) && !empty($pass)){
+        if (isset($key) && isset($pass) && !empty($key) && !empty($pass)) {
 
             return true;
         }
@@ -117,24 +136,15 @@ class PqBikepartsImporter extends Module
     }
 
 
-
-    public function renderMainSettingsForm($logged = false)
+    public function renderLoginForm()
     {
-        //Esquleto del formulario
+
         $form_schema = array();
-        //Configuración General
-        if($logged){
-            $form_schema1[] = $this->getLoggedSettingsFormSchema();
-            $form_schema2[] = $this->getLoggedCategoriesFormSchema();
-            $form_schema3[] = $this->getLoggedCharacteristicsFormSchema();
-        }else{
-            $form_schema[] = $this->getMainSettingsFormSchema();
 
-        }
+        $form_schema[] = $this->getLoginFormSchema();
 
 
-
-	    //Compilamos el formulario
+        //Compilamos el formulario
         $helper = new HelperForm();
 
         $helper->show_toolbar = false;
@@ -146,70 +156,92 @@ class PqBikepartsImporter extends Module
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = array(
-            'fields_value' => $this->getMainSettingsFormValues(), /* Add values for your inputs */
+            'fields_value' => $this->getLoginFormValues(), /* Add values for your inputs */
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
-        
+
         $this->context->smarty->assign(array(
-                'pq_user' => self::PQ_KEY_CK,
-                'pq_pass' => self::PQ_PASS_CK,
-                'pq_bike_form' => $helper->generateForm($form_schema),
-             ));
+            'pq_user' => self::PQ_KEY_CK,
+            'pq_pass' => self::PQ_PASS_CK
+        ));
 
-        if($logged)
-        {
-            $this->context->smarty->assign(array(
-                'pq_bike_form1' => $helper->generateForm($form_schema1),
-                'pq_bike_form2' => $helper->generateForm($form_schema2),
-                'pq_bike_form3' => $helper->generateForm($form_schema3)
-            ));
 
-            return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');
-        }
-        else
-        {
-            return $helper->generateForm($form_schema);
-        }
+        return $helper->generateForm($form_schema);
     }
 
-    protected function getMainSettingsFormValues()
-    {       
-        $arrayToReturn =  array(
-            self::PQ_KEY_CK => Configuration::get(self::PQ_KEY_CK),
-            self::PQ_PASS_CK => Configuration::get(self::PQ_PASS_CK),
-            self::PQ_BKP_COMMISSION_CK => Configuration::get(self::PQ_BKP_COMMISSION_CK),                
+    public function renderGeneralSettingsForm($logged = false)
+    {
+        $form_schema = array();
+        $form_schema[] = $this->getGeneralSettingsFormSchema();
+
+        //Compilamos el formulario
+        $helper = new HelperForm();
+
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $helper->module = $this;
+
+        $helper->submit_action = 'submitBKPGeneralSettings';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getGeneralSettingsFormValues(), /* Add values for your inputs */
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+        );
+
+        return $helper->generateForm($form_schema);
+    }
+
+
+    protected function getGeneralSettingsFormValues()
+    {
+        $arrayToReturn = array(
+            self::PQ_BKP_COMMISSION_CK => Configuration::get(self::PQ_BKP_COMMISSION_CK),
             self::PQ_BKP_ADDITIONAL_TIME_CK => Configuration::get(self::PQ_BKP_ADDITIONAL_TIME_CK),
             self::PQ_BKP_DEFAULT_STATUS_CK => Configuration::get(self::PQ_BKP_DEFAULT_STATUS_CK),
         );
-                   
+
+        return $arrayToReturn;
+    }
+
+    protected function getLoginFormValues()
+    {
+        $arrayToReturn = array(
+
+            self::PQ_KEY_CK => Configuration::get(self::PQ_KEY_CK),
+            self::PQ_PASS_CK => Configuration::get(self::PQ_PASS_CK),
+        );
+
         return $arrayToReturn;
     }
 
     //formulario mostrado cuando NO se ha hecho loggin
-    private function getMainSettingsFormSchema()
+    private function getLoginFormSchema()
     {
         return array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-cogs',
+                    'title' => $this->l('Login'),
+                    'icon' => 'icon-lock',
                 ),
                 'input' => array(
                     array(
                         'type' => 'text',
                         'name' => self::PQ_KEY_CK,
                         'required' => true,
-                         'suffix' => '<i class="icon-key"></i>',
-                        'label' => $this->l('User'),
-                        'class' => 'col-lg-2'
+                        'prefix' => '<i class="icon-user"></i>',
+                        'label' => $this->l('Key'),
+                        'class' => 'col-lg-3'
                     ),
                     array(
                         'type' => 'password',
                         'name' => self::PQ_PASS_CK,
                         'required' => true,
                         'label' => $this->l('Password'),
-                        'class' => 'col-lg-2'
+                        'class' => 'col-lg-3'
                     )
                 ),
                 'submit' => array(
@@ -218,9 +250,9 @@ class PqBikepartsImporter extends Module
             ),
         );
     }
-    
+
     //formulario mostrado cuando SI se ha hecho loggin
-    private function getLoggedSettingsFormSchema()
+    private function getGeneralSettingsFormSchema()
     {
 
         $options = array(
@@ -244,17 +276,20 @@ class PqBikepartsImporter extends Module
                     array(
                         'type' => 'text',
                         'name' => self::PQ_BKP_COMMISSION_CK,
-
+                        'suffix' => "<i class='icon-money'></i>",
                         'required' => true,
                         'label' => $this->l('Comisión'),
-                        'class' => 'col-lg-2'
+                        'class' => 'col-lg-3',
+                        'desc' => 'In %'
                     ),
                     array(
                         'type' => 'text',
                         'name' => self::PQ_BKP_ADDITIONAL_TIME_CK,
+                        'suffix' => '<i class="icon-road"></i>',
                         'required' => true,
                         'label' => $this->l('Tiempo de entrega adicional'),
-                        'class' => 'col-lg-2'
+                        'class' => 'col-lg-3',
+                        'desc' => 'In days'
                     ),
                     array(
                         'type' => 'switch',
@@ -275,9 +310,7 @@ class PqBikepartsImporter extends Module
                                 'label' => $this->l('Disabled')
                             )
                         ),
-
-                ),
-
+                    ),
 
                 ),
                 'submit' => array(
@@ -288,126 +321,50 @@ class PqBikepartsImporter extends Module
     }
 
 
-    private function getLoggedCharacteristicsFormSchema()
+
+    public function linkUp($key, $pass)
     {
-
-        return array(
-            'form' => array(
-                'legend' => array(
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-cogs',
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'text',
-                        'name' => self::PQ_BKP_COMMISSION_CK,
-                        'required' => true,
-                        'label' => $this->l('Comisión'),
-                        'class' => 'col-lg-2'
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                ),
-            ),
-        );
-    }
-
-
-    private function getLoggedCategoriesFormSchema()
-    {
-
-        return array(
-            'form' => array(
-                'legend' => array(
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-cogs',
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'text',
-                        'name' => self::PQ_BKP_COMMISSION_CK,
-                        'required' => true,
-                        'label' => $this->l('Comisión'),
-                        'class' => 'col-lg-2'
-                    ),
-                    array(
-                        'type' => 'text',
-                        'name' => self::PQ_BKP_ADDITIONAL_TIME_CK,
-                        'required' => true,
-                        'label' => $this->l('Tiempo de entrega adicional'),
-                        'class' => 'col-lg-2'
-                    ),
-                ),
-
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                ),
-            ),
-        );
-    }
-
-
-    public function linkUp($key,$pass){
 
         // key 81603093
         //pass 4d4s4mr3
 
-        $url = BikePartsWebServiceClient::buildURLForAllProducts($key,$pass,1);
+        $url = BikePartsWebServiceClient::buildURLForAllProducts($key, $pass, 1);
         $response = BikePartsWebServiceClient::requestXML($url)['response_info'];
 
-        if($response == 'successful'){
+        if ($response == 'successful') {
 
             ConfigurationCore::updateValue(self::PQ_KEY_CK, $key);
             ConfigurationCore::updateValue(self::PQ_PASS_CK, $pass);
 
-            $this->context->controller->confirmations[]= ($this->l('Login successful'));
+            $this->context->controller->confirmations[] = ($this->l('Login successful'));
 
 
-        } else  if($response == 'login failed'){
+        } else if ($response == 'login failed') {
 
-            $this->context->controller->errors[]=($this->l('Login failed. Key or password wrong'));
+            $this->context->controller->errors[] = ($this->l('Login failed. Key or password wrong'));
 
         } else {
 
-            $this->context->controller->errors[]=($this->l('Unknown Error'));
+            $this->context->controller->errors[] = ($this->l('Unknown Error'));
         }
 
     }
 
-    public function logout(){
+    public function logout()
+    {
 
         ConfigurationCore::updateValue(self::PQ_KEY_CK, null);
         ConfigurationCore::updateValue(self::PQ_PASS_CK, null);
 
-        $this->context->controller->confirmations[]= ($this->l('Logout successful'));
+        $this->context->controller->confirmations[] = ($this->l('Logout successful'));
 
 
     }
 
-    public function install()
+    public function requires()
     {
-        if (parent::install() == false) {
-            return false;
-        } else {
-            include(dirname(__FILE__) . '/sql/install.php');
-        }
-        return true;
-    }
 
-    public function uninstall()
-    {
-        if (parent::uninstall() == false) {
-            return false;
-        } else {
-            include(dirname(__FILE__) . '/sql/uninstall.php');
-        }
-        return true;
-    }
-
-    public function requires(){
-
-        require_once (dirname(__FILE__).'/lib/bikepartswebserviceclient.php');
+        require_once(dirname(__FILE__) . '/lib/bikepartswebserviceclient.php');
 
 
     }
