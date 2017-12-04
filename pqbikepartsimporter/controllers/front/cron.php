@@ -16,8 +16,8 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
     public function __construct()
     {
         parent::__construct();
-        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/helper/loghelper.php');
-        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/lib/bikepartswebserviceclient.php');
+        require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/helper/loghelper.php');
+        require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/lib/bikepartswebserviceclient.php');
     }
 
     public function init()
@@ -27,7 +27,8 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
         $this->action = trim(strip_tags(Tools::getValue('action')));
     }
 
-    public function postProcess(){
+    public function postProcess()
+    {
 
 
         try {
@@ -53,43 +54,46 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 
 //http://localhost/prestashop6/es/module/pqbikepartsimporter/cron?action=categories
 //http://www.prestashop.local/prestashop/es/module/pqbikepartsimporter/cron?action=categories
-    public function categoriesSynchronizeBPMethod(){
+    public function categoriesSynchronizeBPMethod()
+    {
 
-        if($this->isLoggedIn()) {
-            $url = BikePartsWebServiceClient::buildURLforCategory($this->key, $this->pass);
-            $response = BikePartsWebServiceClient::requestXML($url);
-            LogHelper::Log("Info", "Sincronizando categorias...");
+        require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
 
-            $categories = ($response['data']);
-            dump($this->xml2array($categories));
-            die();
+        try {
+
+            $data = BikePartsWebServiceClient::getCategoriesV2();
+            foreach ($data as $model) {
+
+                $BkpCategory = BkpCategory::getInstanceByKey($model->key);
+
+                if (Validate::isLoadedObject($BkpCategory)) {
+
+                    $BkpCategory->bkp_name = $model->desc;
+                    $BkpCategory->save();
+
+                } else {
+
+                    $BkpCategory = new BkpCategory();
+                    $BkpCategory->bkp_key = $model->key;
+                    $BkpCategory->bkp_name = $model->desc;
+                    $BkpCategory->save();
+                }
+            }
+
+        } catch (Exception $ex) {
+            LogHelper::LogException($ex->getMessage());
         }
 
+        die("finish categories load");
     }
 
     //http://localhost/prestashop6/es/module/pqbikepartsimporter/cron?action=products
-    public function productsSynchronizeBPMethod(){
+    public function productsSynchronizeBPMethod()
+    {
 
         LogHelper::Log("Info", "Sincronizando productos...");
 
     }
 
-    public function isLoggedIn()
-    {
-        $this->key = Configuration::get('BKP_KEY');
-        $this->pass = Configuration::get('BKP_PASS');
 
-        if (isset($this->key) && isset($this->pass) && !empty($this->key) && !empty($this->pass)) {
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public function xml2array ( $xmlObject)
-    {
-        return json_decode(json_encode((array) ($xmlObject)), 1);
-
-    }
 }

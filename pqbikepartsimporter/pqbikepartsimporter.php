@@ -1,5 +1,7 @@
 <?php
 
+require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
+
 class PqBikepartsImporter extends Module
 {
     const PQ_KEY_CK = 'BKP_KEY';
@@ -51,13 +53,14 @@ class PqBikepartsImporter extends Module
         $this->postProcess();
         $logged = $this->isLoggedIn();
 
-        //Context::getContext()->controller->addJs(__PS_BASE_URI__ . 'modules/pqbikepartsimporter/views/js/pqbikepartsimporter.js');
+        Context::getContext()->controller->addJs(__PS_BASE_URI__ . 'modules/pqbikepartsimporter/views/js/pqbikepartsimporter.js');
 
         if($logged) {
 
             $this->context->smarty->assign(array(
                 'pq_bike_form1' => $this->renderGeneralSettingsForm(),
-                'pq_bike_form2' => $this->renderGeneralSettingsForm(),
+                'bkp_categories' => BkpCategory::getAll(),
+                'prestashop_categories' => Category::getAllCategoriesName(),
                 'pq_bike_form3' => $this->renderGeneralSettingsForm()
             ));
 
@@ -89,7 +92,7 @@ class PqBikepartsImporter extends Module
             $desabilitado = Tools::getValue(self::PQ_BKP_DEFAULT_STATUS_CK);
 
 
-            if(empty($comision) || empty($tiempo_adicional)  || empty($desabilitado)){
+            if(empty($comision) || empty($tiempo_adicional)){
 
                 $this->context->controller->errors[] = ($this->l('All inputs are required'));
                 return;
@@ -279,7 +282,7 @@ class PqBikepartsImporter extends Module
                         'suffix' => "<i class='icon-money'></i>",
                         'required' => true,
                         'label' => $this->l('Comisión'),
-                        'class' => 'col-lg-3',
+                        'class' => 'col-lg-3 numeric',
                         'desc' => 'In %'
                     ),
                     array(
@@ -288,7 +291,7 @@ class PqBikepartsImporter extends Module
                         'suffix' => '<i class="icon-road"></i>',
                         'required' => true,
                         'label' => $this->l('Tiempo de entrega adicional'),
-                        'class' => 'col-lg-3',
+                        'class' => 'col-lg-3 numeric',
                         'desc' => 'In days'
                     ),
                     array(

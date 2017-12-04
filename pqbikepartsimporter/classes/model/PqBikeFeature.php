@@ -16,7 +16,7 @@ class PqBikeFeature
     public $featurekeydesc;
     public $featurevalue;
 
-    public function __contruct($featurekey = null, $featurekeydesc = null, $featurevaule = null )
+    public function __contruct($featurekey = null, $featurekeydesc = null, $featurevalue = null )
     {
         $this->featurekey = $featurekey;
         $this->featurekeydesc = $featurekeydesc;

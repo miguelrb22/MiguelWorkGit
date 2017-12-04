@@ -1,0 +1,52 @@
+2017-12-01 01:32:18 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:32:50 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:33:05 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:33:34 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:33:56 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:51:31 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:51:58 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:53:43 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:55:34 Info: Sincronizando categorias... Origin ::1
+2017-12-01 01:59:34 Info: Sincronizando categorias... Origin ::1
+2017-12-04 05:36:16 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:39:06 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:40:52 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:40:52 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:338 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:41:35 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:41:35 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:338 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:42:03 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:42:03 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:338 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:42:18 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:42:18 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:338 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:42:49 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:42:49 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:338 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:44:04 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:44:14 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:44:14 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:341 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:44:36 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:45:13 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:45:27 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:45:27 Exception: C:\xampp\apps\prestashop\htdocs\modules\pqbikepartsimporter\lib\bikepartswebserviceclient.php:342 -> Notice: Undefined index: filterkey Origin 127.0.0.1
+2017-12-04 05:46:18 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:46:30 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:47:09 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:47:47 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:48:27 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:49:11 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:49:30 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 05:50:13 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:02:16 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:03:26 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:03:56 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:04:23 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:18:56 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:18:56 Exception: C:\xampp\apps\prestashop\htdocs\classes\ObjectModel.php:944 -> La propiedad BkpCategory->bkp_key está vacía. Origin 127.0.0.1
+2017-12-04 06:19:47 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:19:47 Exception: C:\xampp\apps\prestashop\htdocs\classes\ObjectModel.php:944 -> La propiedad BkpCategory->bkp_key está vacía. Origin 127.0.0.1
+2017-12-04 06:22:09 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:22:40 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:23:01 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:24:12 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:25:00 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:25:52 Info: Descargando categorias... Origin 127.0.0.1
+2017-12-04 06:26:49 Info: Descargando categorias... Origin 127.0.0.1

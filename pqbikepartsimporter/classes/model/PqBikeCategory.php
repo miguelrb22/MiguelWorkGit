@@ -15,22 +15,13 @@ class PqBikeCategory
     public $key;
     public $count;
     public $desc;
-    public $alter;
-    public $alterdesc;
     public $products;
-
-    /**
-     * Características de la categoría
-     * @var type
-     */
     public $features;
 
-    public function __contruct($key = null, $count = null, $desc = null, $alter = null, $alterdesc = null)
+    public function __contruct($key = null, $count = null, $desc = null)
     {
         $this->key = $key;
         $this->count = $count;
         $this->desc = $desc;
-        $this->desc = $alter;
-        $this->desc = $alterdesc;
     }
 }

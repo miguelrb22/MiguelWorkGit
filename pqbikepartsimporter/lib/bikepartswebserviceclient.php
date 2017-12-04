@@ -12,6 +12,10 @@
  * @version 1.0
  *
  */
+
+require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/helper/loghelper.php');
+require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/lib/bikepartswebserviceclient.php');
+
 class BikePartsWebServiceClient
 {
 
@@ -309,6 +313,52 @@ class BikePartsWebServiceClient
         return $categories;
     }
 
+    /*
+     * @return array
+     */
+    public static function getCategoriesV2(){
+
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeCategory.php');
+
+        $collection = array();
+
+        $auth = BikePartsWebServiceClient::checkLogin();
+
+        if($auth['logged']) {
+
+            $url = BikePartsWebServiceClient::buildURLforCategory($auth['key'], $auth['pass']);
+            $response = BikePartsWebServiceClient::requestXML($url);
+            LogHelper::Log("Info", "Descargando categorias...");
+
+            $data =   BikePartsWebServiceClient::xml2array(($response['data']))['filter'];
+
+
+            $i = 0;
+            foreach ($data as $item){
+
+                if($i == 0){ $i++; continue; }
+
+                try {
+
+                    $category = new PqBikeCategory();
+                    $category->key = $item['filterkey'];
+                    $category->count = $item['filtercount'];
+                    $category->desc = $item['filterdesc'];
+                    $collection[] = $category;
+
+                }catch (Exception $e){
+
+                    LogHelper::LogException("Error", $e->getMessage());
+
+                }
+
+            }
+
+        }
+
+        return $collection;
+    }
+
     /**
      * Devuelve los productos
      * @param type $data
@@ -451,6 +501,26 @@ class BikePartsWebServiceClient
                 return "unknow error";
                 break;
         }
+
+    }
+
+    public function checkLogin()
+    {
+        $auth = array();
+
+        $auth['key'] = Configuration::get('BKP_KEY');
+        $auth['pass'] = Configuration::get('BKP_PASS');
+        $auth['logged'] = false;
+
+        if (isset($auth['key']) && isset( $auth['pass']) && !empty($auth['key']) && !empty( $auth['pass']))
+            $auth['logged'] = true;
+
+        return $auth;
+    }
+
+    public static function xml2array ($xmlObject)
+    {
+        return json_decode(json_encode((array) ($xmlObject)), 1);
 
     }
 }
