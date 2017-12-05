@@ -1,13 +1,14 @@
 <form id="module_form" class="defaultForm form-horizontal"
-      action="http://www.prestashop.local/prestashop/administration/index.php?controller=AdminModules&amp;configure=pqbikepartsimporter&amp;tab_module=administration&amp;module_name=pqbikepartsimporter&amp;token=28465943f6e3bbe63b3e2937b14c5185"
+      action="{$bkpsubmiturl}"
       method="post" enctype="multipart/form-data" novalidate="">
 
-    <input type="hidden" name="submitBKPGeneralSettings" value="1">
+    <input type="hidden" name="submitBKPCategoryAsociation" value="1">
 
     <div class="panel" id="fieldset_0">
 
         <div class="panel-heading">
-            <i class="icon-cogs"></i> Settings
+            <i class="icon-exchange"></i> {l s='ASSOCIATION (CATEGORY BIKEPARTS -> PRESTASHOP CATEGORY)' mod='pqbikepartsImporter'}
+            <br>
         </div>
 
         <div class="form-wrapper"></div>
@@ -18,7 +19,7 @@
 
                     <span style="font-size: 15px"> {$bkp_category['bkp_name']} </span>
 
-                </div >
+                </div>
 
 
                 <div class="col-lg-2">
@@ -26,12 +27,12 @@
 
                 </div>
 
-                <div class="col-lg-5">
+                <div class="col-lg-4">
 
-                    <select id="bkp_category" class="chosen form-control" name="bkp_category_{$bkp_category['id']}">
+                    <select id="bkp_category" class="form-control" name="bkpcategory_{$bkp_category['id']}">
 
                         {foreach from=$prestashop_categories item=pc}
-                            <option value="{$pc['id_category']}">{$pc['name']}</option>
+                            <option value="{$pc['id_category']}" {if $bkp_category['id_category'] == $pc['id_category']} selected {/if}>{$pc['name']}</option>
                         {/foreach}
                     </select>
                 </div>
@@ -42,9 +43,9 @@
         {/foreach}
 
         <div class="panel-footer">
-            <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPGeneralSettings"
+            <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPCategoryAsociation"
                     class="btn btn-default pull-right">
-                <i class="process-icon-save"></i> Guardar
+                <i class="process-icon-save"></i> Asociar
             </button>
         </div>
 

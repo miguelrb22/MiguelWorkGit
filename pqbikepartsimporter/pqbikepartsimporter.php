@@ -55,13 +55,14 @@ class PqBikepartsImporter extends Module
 
         Context::getContext()->controller->addJs(__PS_BASE_URI__ . 'modules/pqbikepartsimporter/views/js/pqbikepartsimporter.js');
 
-        if($logged) {
+        if ($logged) {
 
             $this->context->smarty->assign(array(
                 'pq_bike_form1' => $this->renderGeneralSettingsForm(),
                 'bkp_categories' => BkpCategory::getAll(),
                 'prestashop_categories' => Category::getAllCategoriesName(),
-                'pq_bike_form3' => $this->renderGeneralSettingsForm()
+                'pq_bike_form3' => $this->renderGeneralSettingsForm(),
+                'bkpsubmiturl' => $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
             ));
 
             return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');
@@ -76,7 +77,7 @@ class PqBikepartsImporter extends Module
 
         if (Tools::isSubmit('submitBKPLogin')) {
 
-            $key  = Tools::getValue(self::PQ_KEY_CK);
+            $key = Tools::getValue(self::PQ_KEY_CK);
             $pass = Tools::getValue(self::PQ_PASS_CK);
 
             $this->linkUp($key, $pass);
@@ -85,20 +86,20 @@ class PqBikepartsImporter extends Module
 
             $this->logout();
 
-        } else if (Tools::isSubmit('submitBKPGeneralSettings')){
+        } else if (Tools::isSubmit('submitBKPGeneralSettings')) {
 
             $comision = Tools::getValue(self::PQ_BKP_COMMISSION_CK);
             $tiempo_adicional = Tools::getValue(self::PQ_BKP_ADDITIONAL_TIME_CK);
             $desabilitado = Tools::getValue(self::PQ_BKP_DEFAULT_STATUS_CK);
 
 
-            if(empty($comision) || empty($tiempo_adicional)){
+            if (empty($comision) || empty($tiempo_adicional)) {
 
                 $this->context->controller->errors[] = ($this->l('All inputs are required'));
                 return;
             }
 
-            if(!is_numeric($comision) || !is_numeric($tiempo_adicional)  || !is_numeric($desabilitado)){
+            if (!is_numeric($comision) || !is_numeric($tiempo_adicional) || !is_numeric($desabilitado)) {
 
                 $this->context->controller->errors[] = ($this->l('All inputs must be integer'));
                 return;
@@ -110,11 +111,25 @@ class PqBikepartsImporter extends Module
 
             $this->context->controller->confirmations[] = ($this->l('Settings updated succesfull'));
 
-        }
+        } else if (Tools::isSubmit('submitBKPCategoryAsociation')) {
 
-        else if (!empty(Tools::getValue('saveBKPCategories'))) {
+            $categories = array_filter($_REQUEST, function ($aux) {
 
+                if (strpos($aux, "bkpcategory_") !== false) return true;
 
+                return false;
+            }, ARRAY_FILTER_USE_KEY);
+
+            foreach ($categories as $key => $value) {
+
+                $bkpid = explode("_", $key)[1];
+                $bkpcategory = new BkpCategory($bkpid);
+                $bkpcategory->id_category = $value;
+                $bkpcategory->save();
+
+            }
+
+            $this->context->controller->confirmations[] = ($this->l('Associations configured successfully'));
 
         }
 
@@ -272,8 +287,8 @@ class PqBikepartsImporter extends Module
         return array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-cogs',
+                    'title' => $this->l('Initial Configuration'),
+                    'icon' => 'icon-gear',
                 ),
                 'input' => array(
                     array(
@@ -281,7 +296,7 @@ class PqBikepartsImporter extends Module
                         'name' => self::PQ_BKP_COMMISSION_CK,
                         'suffix' => "<i class='icon-money'></i>",
                         'required' => true,
-                        'label' => $this->l('Comisión'),
+                        'label' => $this->l('Commission'),
                         'class' => 'col-lg-3 numeric',
                         'desc' => 'In %'
                     ),
@@ -290,13 +305,13 @@ class PqBikepartsImporter extends Module
                         'name' => self::PQ_BKP_ADDITIONAL_TIME_CK,
                         'suffix' => '<i class="icon-road"></i>',
                         'required' => true,
-                        'label' => $this->l('Tiempo de entrega adicional'),
+                        'label' => $this->l('Additional delivery time'),
                         'class' => 'col-lg-3 numeric',
                         'desc' => 'In days'
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Deshabilitado'),
+                        'label' => $this->l('Disabled?'),
                         'name' => self::PQ_BKP_DEFAULT_STATUS_CK,
                         'required' => true,
                         'is_bool' => true,
@@ -324,7 +339,6 @@ class PqBikepartsImporter extends Module
     }
 
 
-
     public function linkUp($key, $pass)
     {
 
@@ -339,7 +353,7 @@ class PqBikepartsImporter extends Module
             ConfigurationCore::updateValue(self::PQ_KEY_CK, $key);
             ConfigurationCore::updateValue(self::PQ_PASS_CK, $pass);
 
-            $this->context->controller->confirmations[] = ($this->l('Login successful'));
+            $this->context->controller->confirmations[] = ($this->l('Login successfully'));
 
 
         } else if ($response == 'login failed') {
@@ -359,7 +373,7 @@ class PqBikepartsImporter extends Module
         ConfigurationCore::updateValue(self::PQ_KEY_CK, null);
         ConfigurationCore::updateValue(self::PQ_PASS_CK, null);
 
-        $this->context->controller->confirmations[] = ($this->l('Logout successful'));
+        $this->context->controller->confirmations[] = ($this->l('Logout successfully'));
 
 
     }

@@ -42,7 +42,7 @@ class BkpCategory extends ObjectModelCore
 
     public static function getAll(){
 
-        $sql = 'SELECT id, bkp_name FROM `' . _DB_PREFIX_ . 'bkp_category`';
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'bkp_category`';
 
         $all = Db::getInstance()->executeS($sql);
 

@@ -6,6 +6,10 @@
 
         <div class="panel" id="fieldset_0_1">
 
+            <div class="panel-heading">
+                <i class="icon-power-off"></i> {l s='Sign off' mod='pqbikepartsImporter'}
+                <br>
+            </div>
 
             <div class="form-wrapper">
 
@@ -19,7 +23,7 @@
 
 
             <div class="panel-footer">
-                <button type="submit" value="1" id="module_form_submit_btn_1" name="submitBKPLogout" class="btn btn-default pull-right">
+                <button type="submit" value="1" id="module_form_submit_btn_1" name="submitBKPLogout" class="btn btn-danger mce-btn-large pull-right">
                     <i class="icon-power-off"></i> Salir
                 </button>
             </div>

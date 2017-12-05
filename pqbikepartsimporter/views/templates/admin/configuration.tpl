@@ -4,9 +4,9 @@
     <!-- Nav tabs -->
     <div class="col-lg-2" style="position:fixed">
         <div class="list-group">
-            <a href="#general" class="list-group-item active" data-toggle="tab"><i class="icon-indent"></i> {l s='General' mod='pqbikepartsImporter'}</a>
-            <a href="#categories" class="list-group-item" data-toggle="tab"><i class="icon-book"></i> {l s='Relacion Categorías' mod='pqbikepartsImporter'}</a>
-            <a href="#characteristics" class="list-group-item" data-toggle="tab"><i class="icon-book"></i> {l s='Relación Características' mod='pqbikepartsImporter'}</a>
+            <a href="#general" class="list-group-item active" data-toggle="tab"><i class="icon-gear"></i> {l s='General' mod='pqbikepartsImporter'}</a>
+            <a href="#categories" class="list-group-item" data-toggle="tab"><i class="icon-exchange"></i> {l s='Categories Relationship ' mod='pqbikepartsImporter'}</a>
+            <a href="#characteristics" class="list-group-item" data-toggle="tab"><i class="icon-indent"></i> {l s='Characteristics Relationship' mod='pqbikepartsImporter'}</a>
             <a href="#logout" class="list-group-item" data-toggle="tab"><i class="icon-power-off"></i> {l s='Logout' mod='pqbikepartsImporter'}</a>
         </div>
     </div>
