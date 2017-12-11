@@ -1,0 +1,8 @@
+2017-12-11 09:54:46 Order Created DFKGSABKC for user miguel@prestaquality.com
+2017-12-11 09:57:43 Order Created PGHPLFWIH for user miguel@prestaquality.com
+2017-12-11 10:15:21 Error El usuario miguel@prestaquality.com ha entrado con un pedido, pero el producto Array 000089 no se ha podido añadir
+2017-12-11 10:17:01 Error El usuario miguel@prestaquality.com ha entrado con un pedido, pero el producto Thermo-X - 100 cápsulas 000089 no se ha podido añadir
+2017-12-11 10:18:44 Error El usuario miguel@prestaquality.com ha entrado con un pedido, pero el producto Thermo-X - 100 cápsulas 000089 no se ha podido añadir
+2017-12-11 10:19:36 Error El usuario miguel@prestaquality.com ha entrado con un pedido, pero el producto Thermo-X - 100 cápsulas 000089 no se ha podido añadir
+2017-12-11 10:50:26 Order Created: YAPSHRNRB for user miguel@prestaquality.com
+2017-12-11 10:52:31 Order Created: QHAIQCZEB for user miguel@prestaquality.com

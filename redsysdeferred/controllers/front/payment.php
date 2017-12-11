@@ -99,11 +99,27 @@ class RedsysDeferredPaymentModuleFrontController extends ModuleFrontController
             $currencies[] = new Currency(Currency::getIdByIsoCodeNum($config['REDSYS_DEF_MONEDA3']));
         }
 
+
+        $amount = Tools::getValue('a');
+        $aux = Tools::getValue('z');
+        $aux = explode("-", $aux);
+
+        if (isset($aux[1]))
+            $aux = $aux[1];
+        else $aux = null;
+
+        if(isset($aux)){
+          $order = new Order($aux);
+          if(Validate::isLoadedObject($order)){
+            $amount = $order->total_paid;
+          }
+        }
+
         $this->context->smarty->assign(array(
             '_errors'       => $errors,
             'currencies'    => $currencies,
             'mail_customer' => $config['REDSYS_DEF_MAIL_CUSTOMER'],
-            'amount'        => Tools::getValue('a'),
+            'amount'        => $amount,
             'currency_url'  => Tools::getValue('c'),
             'name'          => Tools::getValue('n'),
             'description'   => Tools::getValue('d'),
@@ -124,5 +140,5 @@ class RedsysDeferredPaymentModuleFrontController extends ModuleFrontController
         $hitoric = new RedsysdeferredHistoricUrl();
         return $hitoric->Insert($_SERVER["REQUEST_URI"]);
     }
-    
+
 }

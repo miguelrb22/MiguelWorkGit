@@ -2,7 +2,6 @@
  * Created by migue on 03/02/2017.
  */
 
-
 $( document ).ready(function() {
     var a = $(".pagado");
 

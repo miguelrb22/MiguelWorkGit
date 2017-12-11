@@ -25,7 +25,7 @@ class LogHelper
         $filename = _PS_MODULE_DIR_."/pqkasnormegafeedorders/log/".$date.".txt";
 
         $date = date('Y-m-d h:i:s');
-        $result = file_put_contents($filename,"{$date} {$type} {$message}" .PHP_EOL, FILE_APPEND);
+        $result = file_put_contents($filename,"{$date} {$type}: {$message}" ."\r\n", FILE_APPEND);
 
         return $result;
     }

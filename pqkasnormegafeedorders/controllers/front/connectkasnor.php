@@ -16,12 +16,14 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
     public function __construct()
     {
+
         parent::__construct();
     }
 
 
     public function init()
     {
+
         $data = Tools::getValue("data");
         $data = json_decode($data, true);
         $this->data = $data;
@@ -30,6 +32,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
             $this->setTemplate('module:pqkasnormegafeedorders/views/templates/front/result.tpl');
         }
+
         parent::init();
     }
 
@@ -42,6 +45,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
             $email = $this->data["email"];
             $address = $this->data["address"];
             $products = $this->data["products"];
+            $external_reference = $this->data["reference"];
 
             if (isset($email) && !empty($email) && isset($address) && !empty($address) && isset($products) && !empty($products)) {
 
@@ -50,6 +54,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                 if (Validate::isLoadedObject($customer)) {
 
                     $_address = $this->getAdressByAlias($email . $address["id"]);
+
 
                     if (!Validate::isLoadedObject($_address)) {
 
@@ -70,8 +75,8 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                         $_address->id_customer = $customer->id;
                         $_address->alias = $email . $address["id"];
                         $_address->country = $address["country"];
-                        $_address->id_country = $address["id_country"];
-                        $_address->id_state = $address["id_state"];
+                        $_address->id_country = $country->id;
+                        $_address->id_state = $state->id;
                         $_address->other = $address["other"];
                         $_address->lastname = $address["lastname"];
                         $_address->firstname = $address["firstname"];
@@ -84,10 +89,10 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                         $_address->dni = $address["dni"];
                         $_address->save();
 
+
                     }
 
                     if (Validate::isLoadedObject($_address)) {
-
 
                         //Creamos un nuevo carro
                         $cart = new Cart();
@@ -98,7 +103,6 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                         $cart->id_customer = $customer->id;
                         $cart->id_address_delivery = $_address->id;
                         $cart->id_address_invoice = $_address->id;
-
 
                         if ($cart->id_customer) {
                             $customer = new Customer($customer->id);
@@ -111,19 +115,32 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
                             $reference = $product["reference"];
                             $quantity = $product["quantity"];
-                            //$reference = str_replace("KAS","",$reference); // TODO DESCOMENTAR EN PRODUCCION
+                            $reference = str_replace("KAS","",$reference); // TODO DESCOMENTAR EN PRODUCCION
 
                             $_product = $this->getProductByReference($reference);
 
                             if ($_product != null) {
 
-                                $cart->updateQty($quantity, $_product->id);
+                               $aux = $cart->updateQty($quantity, $_product['product'], $_product['ipa']);
+                               if($aux == false){
+
+                                  $lang = $this->context->language->id;
+                                  $product_ws = new Product($_product['product']);
+                                  throw new NotStockException("{$product_ws->name[$lang]} {$product_ws->reference}");
+
+                               }
 
                             }
                         }
 
+                        $this->context->cart = $cart;
 
-                        Context::getContext()->cart = $cart;
+                        $this->context->country = new Country($_address->id_country);
+
+                        //Context::getContext()->cart = $cart;
+
+                        //Context::getContext()->country = new Country($_address->id_country);
+
 
                         //TODO BERTO ESTO HACE FALTA?
                         //Añadimos vales descuento
@@ -131,6 +148,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                         $context->cart = $cart;
                         Cache::clean('getContextualValue_*');
                         CartRule::autoAddToCart($context);*/
+
 
                         //Validamos el pedido
                         $payment_module = new LoaderOrder();
@@ -152,9 +170,85 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
                                 $customer = new Customer($order->id_customer);
 
-                                //2- Se envia un email
-                                $mailed =  Mail::Send($this->context->language->id, 'dropshipping_confirmation', Mail::l('New Order Created', $this->context->language->id), array('{url}' => $payment_url), $email, $customer->firstname, null, "Kasnor", null, null, _PS_MAIL_DIR_, false, $this->context->shop->id);
+                                $virtual_product = true;
 
+                               $product_var_tpl_list = array();
+
+                               foreach ($this->context->cart->getProducts() as $product) {
+                                   $price = Product::getPriceStatic((int)$product['id_product'], false, ($product['id_product_attribute'] ? (int)$product['id_product_attribute'] : null), 6, null, false, true, $product['cart_quantity'], false, (int)$order->id_customer, (int)$order->id_cart, (int)$order->{Configuration::get('PS_TAX_ADDRESS_TYPE')});
+                                   $price_wt = Product::getPriceStatic((int)$product['id_product'], true, ($product['id_product_attribute'] ? (int)$product['id_product_attribute'] : null), 2, null, false, true, $product['cart_quantity'], false, (int)$order->id_customer, (int)$order->id_cart, (int)$order->{Configuration::get('PS_TAX_ADDRESS_TYPE')});
+
+                                   $product_price = Product::getTaxCalculationMethod() == PS_TAX_EXC ? Tools::ps_round($price, 2) : $price_wt;
+
+                                   $product_var_tpl = array(
+                                       'reference' => $product['reference'],
+                                       'name' => $product['name'].(isset($product['attributes']) ? ' - '.$product['attributes'] : ''),
+                                       'unit_price' => Tools::displayPrice($product_price, $this->context->currency, false),
+                                       'price' => Tools::displayPrice($product_price * $product['quantity'], $this->context->currency, false),
+                                       'quantity' => $product['quantity'],
+                                       'customization' => array()
+                                   );
+
+                                   $customized_datas = Product::getAllCustomizedDatas((int)$order->id_cart);
+                                   if (isset($customized_datas[$product['id_product']][$product['id_product_attribute']])) {
+                                       $product_var_tpl['customization'] = array();
+                                       foreach ($customized_datas[$product['id_product']][$product['id_product_attribute']][$order->id_address_delivery] as $customization) {
+                                           $customization_text = '';
+                                           if (isset($customization['datas'][Product::CUSTOMIZE_TEXTFIELD])) {
+                                               foreach ($customization['datas'][Product::CUSTOMIZE_TEXTFIELD] as $text) {
+                                                   $customization_text .= $text['name'].': '.$text['value'].'<br />';
+                                               }
+                                           }
+
+                                           if (isset($customization['datas'][Product::CUSTOMIZE_FILE])) {
+                                               $customization_text .= sprintf(Tools::displayError('%d image(s)'), count($customization['datas'][Product::CUSTOMIZE_FILE])).'<br />';
+                                           }
+
+                                           $customization_quantity = (int)$product['customization_quantity'];
+
+                                           $product_var_tpl['customization'][] = array(
+                                               'customization_text' => $customization_text,
+                                               'customization_quantity' => $customization_quantity,
+                                               'quantity' => Tools::displayPrice($customization_quantity * $product_price, $this->context->currency, false)
+                                           );
+                                       }
+                                   }
+
+                                   $product_var_tpl_list[] = $product_var_tpl;
+                                   // Check if is not a virutal product for the displaying of shipping
+                                   if (!$product['is_virtual']) {
+                                       $virtual_product &= false;
+                                   }
+                               } // end foreach ($products)
+
+                                 $product_list_txt = '';
+                                 $product_list_html = '';
+                                 if (count($product_var_tpl_list) > 0) {
+                                     $product_list_txt = $this->getEmailTemplateContent('order_conf_product_list.txt', Mail::TYPE_TEXT, $product_var_tpl_list);
+                                     $product_list_html = $this->getEmailTemplateContent('order_conf_product_list.tpl', Mail::TYPE_HTML, $product_var_tpl_list);
+                                 }
+
+
+
+                                $template_vars = array (
+
+                                    '{reference}' => $external_reference,
+                                    '{firstname}' => $customer->firstname,
+                                    '{lastname}' => $customer->lastname,
+                                    '{url}' => $payment_url,
+                                    '{order_name}' => $order->getUniqReference(),
+                                    '{date}' => Tools::displayDate(date('Y-m-d H:i:s'), null, 1),
+                                    '{products}' => $product_list_html,
+                                    '{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),
+                                    '{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $this->context->currency, false),
+                                    '{total_discounts}' => Tools::displayPrice($order->total_discounts, $this->context->currency, false),
+                                    '{total_paid}' => Tools::displayPrice($order->total_paid, $this->context->currency, false),
+                                    '{total_products}' => Tools::displayPrice(Product::getTaxCalculationMethod() == PS_TAX_EXC ? $order->total_products : $order->total_products_wt, $this->context->currency, false),
+                                    '{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) + ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $this->context->currency, false)
+
+                                );
+                                //2- Se envia un email
+                                $mailed = Mail::Send($this->context->language->id, 'dropshipping_confirmation', Mail::l('New Dropshipping Order Created', $this->context->language->id), $template_vars, $email, $customer->firstname, 'info@kasnor.com', 'KASNOR', null, null, _PS_MODULE_DIR_ . '/pqkasnormegafeedorders/views/templates/mails/');
                                 // si se ha enviado el email se inserta la url con su id order
                                 if($mailed){
 
@@ -164,6 +258,9 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
                                     $order_url->save();
 
                                 }
+
+                                LogHelper::Log("Order Created", "{$order->reference} for user {$email}");
+
                             }
                         }
 
@@ -182,6 +279,10 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
             LogHelper::Log("Error", "El usuario {$email} ha entrado con un pedido, pero la direccion no se encuentra o no se ha podido crear " . json_encode($address));
 
+        } catch (NotStockException $e) {
+
+            LogHelper::Log("Error", "El usuario {$email} ha entrado con un pedido, pero el producto {$e->getMessage()} no se ha podido añadir");
+
         } catch (KasnorCustomerNotAllowedException $e) {
 
             LogHelper::Log("Error", "El usuario {$email} ha entrado con un pedido, pero este usuario no se encuentra como cliente Kasnor", $e->getPrevious());
@@ -196,7 +297,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
         } catch (Exception $e) {
 
-            LogHelper::Log("Error", $e->getMessage());
+            LogHelper::Log("Error", $e->getMessage(). " usuario {$email}");
         }
     }
 
@@ -211,7 +312,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
         $sql = 'SELECT *
                 FROM `' . _DB_PREFIX_ . 'customer`
                 WHERE `email` = \'' . pSQL($email) . '\'
-                AND `id_default_group` = ' . pSQL(Configuration::get("KASNORMEGAFEEDORDER_USER_GROUP")) . '            
+                AND `id_default_group` = ' . pSQL(Configuration::get("KASNORMEGAFEEDORDER_USER_GROUP")) . '
                 ';
 
         $user = Db::getInstance()->executeS($sql);
@@ -249,18 +350,36 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
     public function getProductByReference($reference)
     {
 
+        $result = array();
+        $result['product'] = null;
+        $result['ipa'] = null;
 
-        $sql = 'SELECT *
-                FROM `' . _DB_PREFIX_ . 'product`
-                WHERE `reference` = \'' . pSQL($reference) . '\'
-                ';
+        //primero se busca por combinacion
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'product_attribute` WHERE `reference` = \'' . pSQL($reference) . '\'';
 
         $product = Db::getInstance()->executeS($sql);
 
+        //si se ha encontrado el producto se devuelve
         if (isset($product) && !empty($product)) {
 
-            return new Product($product[0]['id_product']);
+          $result['product'] = $product[0]['id_product'];
+          $result['ipa'] =  $product[0]['id_product_attribute'];
+          return $result;
         }
+
+        //si no se busca por producto
+
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'product` WHERE `reference` = \'' . pSQL($reference) . '\'';
+        $product = Db::getInstance()->executeS($sql);
+
+        //si se ha encontrado el producto se devuelve
+        if (isset($product) && !empty($product)) {
+
+            $result['product'] =  $product[0]['id_product'];
+            return $result;
+
+        }
+
         return null;
     }
 
@@ -324,7 +443,7 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
     {
 
         $customer = new Customer($order->id_customer);
-        $prefix = _PS_BASE_URL_. __PS_BASE_URI__."module/redsysdeferred/payment?";
+        $prefix = _PS_BASE_URL_. __PS_BASE_URI__."controller/redsysdeferred/payment?";
         $a = "a=" . $order->total_paid_tax_incl;
         $c = "&c=" . $order->id_currency;
         $n = "&n=" . $customer->firstname;
@@ -336,6 +455,24 @@ class PqkasnormegafeedordersConnectkasnorModuleFrontController extends ModuleFro
 
         return $url;
     }
+
+    protected function getEmailTemplateContent($template_name, $mail_type, $var)
+   {
+       $email_configuration = Configuration::get('PS_MAIL_TYPE');
+       if ($email_configuration != $mail_type && $email_configuration != Mail::TYPE_BOTH) {
+           return '';
+       }
+       $theme_template_path = _PS_THEME_DIR_.'mails'.DIRECTORY_SEPARATOR.$this->context->language->iso_code.DIRECTORY_SEPARATOR.$template_name;
+       $default_mail_template_path = _PS_MAIL_DIR_.$this->context->language->iso_code.DIRECTORY_SEPARATOR.$template_name;
+       if (Tools::file_exists_cache($theme_template_path)) {
+           $default_mail_template_path = $theme_template_path;
+       }
+       if (Tools::file_exists_cache($default_mail_template_path)) {
+           $this->context->smarty->assign('list', $var);
+           return $this->context->smarty->fetch($default_mail_template_path);
+       }
+       return '';
+   }
 }
 
 class LoaderOrder extends PaymentModule
@@ -346,5 +483,6 @@ class LoaderOrder extends PaymentModule
     public function __construct()
     {
         $this->displayName = $this->l('Dropshipping order');
+        parent::__construct();
     }
 }

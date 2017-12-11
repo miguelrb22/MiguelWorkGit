@@ -39,8 +39,7 @@ class Kasnormegafeed extends Module
 {
     protected $config_form = false;
 
-    protected $url = "http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor";
-
+    protected $url = "http://www.kasnor.com/es/controller/pqkasnormegafeedorders/connectkasnor";
 
     public function __construct()
     {
@@ -63,6 +62,7 @@ class Kasnormegafeed extends Module
         $this->confirmUninstall = $this->l('Are you sure?');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+
     }
 
     /**
@@ -85,9 +85,9 @@ class Kasnormegafeed extends Module
          {
               PqKasnormegafeedLib::logException($ex);
          }
-    
+
     }
-    
+
     public function uninstall()
     {
 
@@ -99,8 +99,6 @@ class Kasnormegafeed extends Module
      */
     public function getContent()
     {
-
-        //ddd($this->context->link->getModuleLink('kasnormegafeed','update',array()));
 
         /**
          * If values have been submitted in the form, process.
@@ -136,9 +134,8 @@ class Kasnormegafeed extends Module
 
             //RECORREMOS TODOS LOS PRODUCTOS DEL CARRITO
             $index = 0;
-
-
             $json_array['email'] = $email;
+            $json_array['reference'] = $params['order']->reference;
 
             $address = new Address((int)$params["cart"]->id_address_delivery);
 
@@ -170,7 +167,7 @@ class Kasnormegafeed extends Module
             foreach($params["cart"]->getProducts() as $value)
             {
                 $reference = $value['reference'];
-               
+
                 if(strpos($reference,'KAS') !== false)
                 {
                     $quantity = $value['cart_quantity'];
@@ -314,17 +311,16 @@ class Kasnormegafeed extends Module
      */
     private function kasnorOrderRequest($order){
 
-        //http://localhost/prestashop6/es/module/pqkasnormegafeedorders/connectkasnor?data={%22email%22:%22miguel@prestquality.com%22,%22address%22:{%22id%22:5,%22country%22:%22Espa\u00f1a%22,%22id_country%22:%226%22,%22id_state%22:%22316%22,%22iso_country%22:%22ES%22,%22iso_state%22:%22ES-A%22,%22other%22:%22%22,%22lastname%22:%22Ruiz%22,%22firstname%22:%22Miguek%22,%22address1%22:%22qdwqd%22,%22address2%22:%22%22,%22postcode%22:%2203370%22,%22city%22:%22Redovan%22,%22phone%22:%22666666666%22,%22phone_mobile%22:%22666666666%22,%22dni%22:%2248642143H%22},%22products%22:[{%22reference%22:%22KAS8023820%22,%22quantity%22:%221%22}]}        //http://www.prestashop.local/prestashop/es/module/pqkasnormegafeedorders/connectkasnor?data={%22email%22:%22miguel@prestaquality.com%22,%22address%22:{%22id%22:5,%22country%22:%22Espa%C3%B1a%22,%22lastname%22:%22Ruiz%22,%22firstname%22:%22Miguek%22,%22address1%22:%22qdwqd%22,%22address2%22:%22%22,%22postcode%22:%2203370%22,%22city%22:%22Redovan%22,%22phone%22:%22666666666%22,%22phone_mobile%22:%22666666666%22,%22dni%22:%2248642143H%22},%22products%22:[{%22reference%22:%22KAS000478%22,%22quantity%22:%221%22}]}
-        $data = array("order" => $order);
+        $data = array("data" => $order);
 
-        $ch = curl_init( $this->url );
-        curl_setopt( $ch, CURLOPT_POST, 1);
-        curl_setopt( $ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt( $ch, CURLOPT_HEADER, 0);
-        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+        $ch = curl_init($this->url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $response = curl_exec( $ch );
+        $response = curl_exec($ch);
 
         curl_close($ch);
 

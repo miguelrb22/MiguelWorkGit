@@ -44,6 +44,7 @@ class pqkasnormegafeedorders extends Module
         $this->confirmUninstall = $this->l('Are you sure?');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+
     }
 
     /**
@@ -169,7 +170,6 @@ class pqkasnormegafeedorders extends Module
     {
         return array(
             'KASNORMEGAFEEDORDER_USER_GROUP' => Configuration::get('KASNORMEGAFEEDORDER_USER_GROUP', '')
-
         );
     }
 

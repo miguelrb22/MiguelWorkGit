@@ -763,7 +763,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
 
         //Recorremos cada linea
         foreach ($data as $data_row) {
-            //Bucamos la correspondencia 
+            //Bucamos la correspondencia
             $product_find = array_filter($comb_db, function($r)use($data_row) {
                 return $r['reference'] == ('KAS' . $data_row['reference']);
             });
@@ -821,7 +821,7 @@ class KasnorMegaFeedUpdateModuleFrontController extends ModuleFrontController
                 $product_obj->save();
             }
         }
-        
+
         //Stock
         $current_stock = StockAvailable::getQuantityAvailableByProduct($idp,$ipa);
         //Si el stock es distinto al nuevo, actualizamos (evitamos el lanzamiento de hooks)

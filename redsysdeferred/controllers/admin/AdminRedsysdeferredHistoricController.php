@@ -116,6 +116,8 @@ class AdminRedsysdeferredHistoricController extends ModuleAdminController
 
     public function setMedia()
     {
+        $this->addJS('https://code.jquery.com/jquery-2.2.4.min.js');
+
         $this->addJS(_MODULE_DIR_.$this->module->name.'/views/js/paid.js');
         return parent::setMedia();
     }
