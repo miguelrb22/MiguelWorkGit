@@ -84,7 +84,39 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
             LogHelper::LogException($ex->getMessage());
         }
 
+        if(Tools::isSubmit("redirect")){
+
+            Tools::redirect($_SERVER['HTTP_REFERER']);
+        }
+
         die("finish categories load");
+    }
+
+    //http://www.prestashop.local/prestashop/es/module/pqbikepartsimporter/cron?action=charasteristics
+    public function charasteristicsSynchronizeBPMethod()
+    {
+        require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
+
+
+        $categories = BkpCategory::getAll();
+
+
+        foreach ($categories as $category) {
+
+            $category_id = $category['id'];
+
+            $features =  BikePartsWebServiceClient::getFeaturesByCategory($category['bkp_key']);
+
+            foreach ($features as $feature) {
+
+                dump($feature);
+                die();
+            }
+
+        }
+
+        die("finish characteristics load");
+
     }
 
     //http://localhost/prestashop6/es/module/pqbikepartsimporter/cron?action=products

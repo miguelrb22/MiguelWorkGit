@@ -119,7 +119,7 @@ class BikePartsWebServiceClient
             $url = $url . "&page=" . $page;
         }
 
-        if ($featuresearch != null && !empty(featuresearch)) {
+        if ($featuresearch != null && !empty($featuresearch)) {
             $url = $url . "&featuresearch=" . $featuresearch;
         }
         return $url;
@@ -313,10 +313,40 @@ class BikePartsWebServiceClient
         return $categories;
     }
 
+
+    /*
+   * @return array
+   */
+    public static function getFeaturesByCategory($key){
+
+        //    public static function buildURLForProductsByCategory($user, $password, $category, $page = null, $perpage = null, $hqpic = null, $showfeature = null, $featuresearch = null)
+
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeCategory.php');
+
+        $collection = array();
+
+        $auth = BikePartsWebServiceClient::checkLogin();
+
+        if($auth['logged']) {
+
+            $url = BikePartsWebServiceClient::buildURLforCategory($auth['key'], $auth['pass'], $key, null, null, true, true, true);
+
+            $response = BikePartsWebServiceClient::requestXML($url);
+            LogHelper::Log("Info", "Descargando categorias...");
+
+
+            $data =   BikePartsWebServiceClient::xml2array(($response['data']));
+            $collection = $data['feature'];
+
+        }
+        return $collection;
+    }
+
     /*
      * @return array
      */
     public static function getCategoriesV2(){
+
 
         require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeCategory.php');
 

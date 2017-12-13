@@ -23,7 +23,7 @@
         </div>
 
         <div class="tab-pane" id="characteristics">
-            {$pq_bike_form3}
+            {include file = './tabs/characteristics.tpl' }
         </div>
 
         <div class="tab-pane" id="logout">

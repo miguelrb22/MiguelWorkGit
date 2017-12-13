@@ -57,12 +57,18 @@ class PqBikepartsImporter extends Module
 
         if ($logged) {
 
+            $prestashop_categories = Category::getAllCategoriesName();
+
+            $prestashop_categories[] = array("id_category" => 0, "name" => $this->l('No sincronizar'));
+
+
             $this->context->smarty->assign(array(
                 'pq_bike_form1' => $this->renderGeneralSettingsForm(),
                 'bkp_categories' => BkpCategory::getAll(),
-                'prestashop_categories' => Category::getAllCategoriesName(),
+                'prestashop_categories' => $prestashop_categories,
                 'pq_bike_form3' => $this->renderGeneralSettingsForm(),
                 'bkpsubmiturl' => $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
+                'bkp_cron_categories' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "categories"))
             ));
 
             return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');
@@ -369,21 +375,15 @@ class PqBikepartsImporter extends Module
 
     public function logout()
     {
-
         ConfigurationCore::updateValue(self::PQ_KEY_CK, null);
         ConfigurationCore::updateValue(self::PQ_PASS_CK, null);
 
         $this->context->controller->confirmations[] = ($this->l('Logout successfully'));
-
-
     }
 
     public function requires()
     {
-
         require_once(dirname(__FILE__) . '/lib/bikepartswebserviceclient.php');
-
-
     }
 
 }

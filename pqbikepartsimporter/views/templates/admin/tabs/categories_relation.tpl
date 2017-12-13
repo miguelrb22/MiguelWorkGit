@@ -40,6 +40,17 @@
 
             </div>
             <hr>
+
+            {foreachelse}
+
+            <span>{l s='without data' mod='pqbikepartsImporter'}</span>
+
+            <br>
+
+
+            <a class="btn btn-warning" href="{$bkp_cron_categories}"> Execute </a>
+
+
         {/foreach}
 
         <div class="panel-footer">
