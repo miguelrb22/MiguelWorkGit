@@ -45,6 +45,10 @@ class PqBikepartsImporter extends Module
         } else {
             include(dirname(__FILE__) . '/sql/uninstall.php');
         }
+
+        Configuration::deleteByName(self::PQ_KEY_CK);
+        Configuration::deleteByName(self::PQ_PASS_CK);
+
         return true;
     }
 
@@ -62,13 +66,25 @@ class PqBikepartsImporter extends Module
             $prestashop_categories[] = array("id_category" => 0, "name" => $this->l('No sincronizar'));
 
 
+            $all = BkpCategory::getAll();
+
+            $data = BkpCategory::getCategoryFeatureValueData($all[0]['id']);
+
+            $features = Feature::getFeatures($this->context->language->id);
+
             $this->context->smarty->assign(array(
                 'pq_bike_form1' => $this->renderGeneralSettingsForm(),
-                'bkp_categories' => BkpCategory::getAll(),
+                'pq_bkp_feature_value_date' => $data,
+                'pq_bkp_features' => $features,
+                'bkp_categories' => $all,
                 'prestashop_categories' => $prestashop_categories,
                 'pq_bike_form3' => $this->renderGeneralSettingsForm(),
                 'bkpsubmiturl' => $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
                 'bkp_cron_categories' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "categories"))
+            ));
+
+            $this->context->smarty->assign(array(
+                'characteristics_layout' => $this->display(__FILE__, 'views/templates/admin/tabs/characteristics_content.tpl')
             ));
 
             return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');

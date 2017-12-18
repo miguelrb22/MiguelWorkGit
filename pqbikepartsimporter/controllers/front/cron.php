@@ -18,6 +18,8 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
         parent::__construct();
         require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/helper/loghelper.php');
         require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/lib/bikepartswebserviceclient.php');
+        require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/classes/BkpFeature.php');
+        require_once(_PS_MODULE_DIR_ . '/pqbikepartsimporter/classes/BkpFeatureValue.php');
     }
 
     public function init()
@@ -29,7 +31,6 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 
     public function postProcess()
     {
-
 
         try {
 
@@ -84,7 +85,7 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
             LogHelper::LogException($ex->getMessage());
         }
 
-        if(Tools::isSubmit("redirect")){
+        if (Tools::isSubmit("redirect")) {
 
             Tools::redirect($_SERVER['HTTP_REFERER']);
         }
@@ -93,30 +94,111 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
     }
 
     //http://www.prestashop.local/prestashop/es/module/pqbikepartsimporter/cron?action=charasteristics
+
+    /**
+     *
+     */
     public function charasteristicsSynchronizeBPMethod()
     {
-        require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
+        try {
+
+            require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
+
+            $categories = BkpCategory::getAll();
+
+            foreach ($categories as $category) {
+
+                $bkp_category_id = $category['id'];
+
+                $features = BikePartsWebServiceClient::getFeaturesByCategory($category['bkp_key']);
+
+                if (!isset($features['featurekey'])) {
+
+                    foreach ($features as $feature) {
+
+                        $Objectfeature = $this->createFeature($bkp_category_id, $feature);
+                        $BkpFeatureId = $Objectfeature->id;
+                        $this->setFeatureValues($feature['featurevalue'], $BkpFeatureId);
+
+                    }
+
+                } else {
 
 
-        $categories = BkpCategory::getAll();
+                    $Objectfeature = $this->createFeature($bkp_category_id, $features);
+                    $BkpFeatureId = $Objectfeature->id;
+                    $this->setFeatureValues($features['featurevalue'], $BkpFeatureId);
 
+                }
 
-        foreach ($categories as $category) {
-
-            $category_id = $category['id'];
-
-            $features =  BikePartsWebServiceClient::getFeaturesByCategory($category['bkp_key']);
-
-            foreach ($features as $feature) {
-
-                dump($feature);
-                die();
             }
 
+            die("finish characteristics load");
+
+        } catch (Exception $e) {
+
+            dump($e->getMessage());
+            die();
         }
 
-        die("finish characteristics load");
+    }
 
+    private function createFeature($bkp_category_id, $feature){
+
+        $Objectfeature = BkpFeature::getByCategory($bkp_category_id, $feature['featurekey']);
+
+        if (!Validate::isLoadedObject($Objectfeature)) {
+
+            $Objectfeature->feature_key = $feature['featurekey'];
+            $Objectfeature->feature_value = $feature['featurekeydesc'];
+            $Objectfeature->id_bkp_category = $bkp_category_id;
+            $Objectfeature->save();
+        }
+
+        return $Objectfeature;
+
+    }
+
+    /**
+     * Crea los Value de cada Feature
+     * @param $feature_values
+     * @param $BkpFeatureId
+     */
+    private function setFeatureValues($feature_values, $BkpFeatureId)
+    {
+        if (!isset($feature_values['valuekey'])) {
+
+            foreach ($feature_values as $value) {
+
+                $ObjectValue = $this->createFeatureValue($BkpFeatureId, $value);
+            }
+
+        } else {
+
+            $ObjectValue = $this->createFeatureValue($BkpFeatureId, $feature_values);
+        }
+
+    }
+
+    /**
+     * Crea o instancia un Value de una Feature
+     * @param $BkpFeatureId
+     * @param $value
+     * @return BkpFeatureValue
+     */
+    private function createFeatureValue($BkpFeatureId, $value){
+
+        $ObjectValue = BkpFeatureValue::getValueByFeature($BkpFeatureId, $value['valuekey']);
+
+        if (!Validate::isLoadedObject($ObjectValue)) {
+
+            $ObjectValue->id_bkp_feature = $BkpFeatureId;
+            $ObjectValue->value_key = $value['valuekey'];
+            $ObjectValue->value_desc = $value['valuedesc'];
+            $ObjectValue->save();
+        }
+
+        return $ObjectValue;
     }
 
     //http://localhost/prestashop6/es/module/pqbikepartsimporter/cron?action=products

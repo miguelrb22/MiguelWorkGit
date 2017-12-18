@@ -6,18 +6,7 @@
 
 
 
-    <div class="row">
 
-        <div class="col-lg-12">
-
-            <select id="bkp_category" class="form-control">
-                {foreach from=$bkp_categories item=bkp_category}
-                    <option value="{$bkp_category['id']}">{$bkp_category['bkp_name']}</option>
-                {/foreach}
-            </select>
-        </div>
-
-    </div>
     <div class="panel" id="fieldset_0">
 
         <div class="panel-heading">
@@ -25,36 +14,44 @@
             <br>
         </div>
 
-        <div class="form-wrapper"></div>
+        <div class="form-wrapper">
 
-        {foreach from=$bkp_categories item=bkp_category}
             <div class="row">
+
+                <div class="col-lg-6">
+
+                    <h4> Configure associations for...</h4>
+                </div>
+
+            </div>
+
+            <div class="row">
+
                 <div class="col-lg-5">
 
-                    <span style="font-size: 15px"> {$bkp_category['bkp_name']} </span>
-
-                </div>
-
-
-                <div class="col-lg-2">
-                    <span> <i class="icon-arrow-right"></i> </span>
-
-                </div>
-
-                <div class="col-lg-4">
-
-                    <select id="bkp_category" class="form-control" name="bkpcategory_{$bkp_category['id']}">
-
-                        {foreach from=$prestashop_categories item=pc}
-                            <option value="{$pc['id_category']}" {if $bkp_category['id_category'] == $pc['id_category']} selected {/if}>{$pc['name']}</option>
+                    <select id="bkp_category" class="form-control">
+                        {foreach from=$bkp_categories item=bkp_category}
+                            <option value="{$bkp_category['id']}">{$bkp_category['bkp_name']}</option>
                         {/foreach}
                     </select>
                 </div>
 
+            </div>
+
+
+            <div class="row">
+
+                <div class="col-lg-12 bkp_characteristics_layout">
+
+                    {$characteristics_layout}
+
+                </div>
 
             </div>
-            <hr>
-        {/foreach}
+
+
+        </div>
+
 
         <div class="panel-footer">
             <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPCategoryAsociation"
