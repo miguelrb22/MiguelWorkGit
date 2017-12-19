@@ -1,4 +1,4 @@
-<form id="module_form" class="defaultForm form-horizontal"
+<form class="defaultForm form-horizontal"
       action="{$bkpsubmiturl}"
       method="post" enctype="multipart/form-data" novalidate="">
 
@@ -15,24 +15,39 @@
 
         {foreach from=$bkp_categories item=bkp_category}
             <div class="row">
-                <div class="col-lg-5">
+                <div class="col-lg-4">
 
                     <span style="font-size: 15px"> {$bkp_category['bkp_name']} </span>
 
                 </div>
 
 
-                <div class="col-lg-2">
+                <div class="col-lg-1">
                     <span> <i class="icon-arrow-right"></i> </span>
 
                 </div>
 
                 <div class="col-lg-4">
 
-                    <select id="bkp_category" class="form-control" name="bkpcategory_{$bkp_category['id']}">
+                    <select class="form-control" name="bkpcategory_{$bkp_category['id']}">
 
                         {foreach from=$prestashop_categories item=pc}
                             <option value="{$pc['id_category']}" {if $bkp_category['id_category'] == $pc['id_category']} selected {/if}>{$pc['name']}</option>
+                        {/foreach}
+                    </select>
+                </div>
+
+                <div class="col-lg-1">
+                    <span style="margin: auto;  text-align: center;"> <i class="icon-arrow-right"></i> </span>
+
+                </div>
+
+                <div class="col-lg-2">
+
+                    <select class="form-control" name="bkpcategory_tax_{$bkp_category['id']}">
+
+                        {foreach from=$taxes item=tax}
+                            <option value="{$tax['id_tax']}">{$tax['name']}</option>
                         {/foreach}
                     </select>
                 </div>
@@ -43,8 +58,9 @@
 
             {foreachelse}
 
-            <span>{l s='without data' mod='pqbikepartsImporter'}</span>
+            <span>{l s='Without data. Please, configure cron. For first time, you can click the next button.' mod='pqbikepartsImporter'}</span>
 
+            <br>
             <br>
 
 
@@ -54,7 +70,7 @@
         {/foreach}
 
         <div class="panel-footer">
-            <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPCategoryAsociation"
+            <button type="submit" value="1" name="submitBKPCategoryAsociation"
                     class="btn btn-default pull-right">
                 <i class="process-icon-save"></i> Asociar
             </button>

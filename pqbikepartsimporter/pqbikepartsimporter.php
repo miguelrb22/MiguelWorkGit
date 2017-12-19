@@ -70,12 +70,16 @@ class PqBikepartsImporter extends Module
 
             $data = BkpCategory::getCategoryFeatureValueData($all[0]['id']);
 
+
             $features = Feature::getFeatures($this->context->language->id);
+
+            $taxes = TaxCore::getTaxes($this->context->language->id, true);
 
             $this->context->smarty->assign(array(
                 'pq_bike_form1' => $this->renderGeneralSettingsForm(),
                 'pq_bkp_feature_value_date' => $data,
                 'pq_bkp_features' => $features,
+                'taxes' => $taxes,
                 'bkp_categories' => $all,
                 'prestashop_categories' => $prestashop_categories,
                 'pq_bike_form3' => $this->renderGeneralSettingsForm(),

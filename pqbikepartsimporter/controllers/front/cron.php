@@ -100,6 +100,7 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
      */
     public function charasteristicsSynchronizeBPMethod()
     {
+
         try {
 
             require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
@@ -137,7 +138,7 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 
         } catch (Exception $e) {
 
-            dump($e->getMessage());
+            ddd($e->getMessage());
             die();
         }
 
