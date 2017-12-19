@@ -53,14 +53,17 @@ class BkpCategory extends ObjectModelCore
 
     //$query = "SELECT * FROM `ps_bkp_category` c left join ps_bkp_feature f on (c.id = f.id_bkp_category) left join ps_bkp_feature_value v on( f.id = v.id_bkp_feature)";
 
-    public static function getCategoryFeatureValueData($id_category){
+    public static function getCategoryFeatureValueData($id_category = null){
 
         $db = Db::getInstance();
 
-        $query = "SELECT c.id as id_category, c.bkp_key, c.bkp_name, c.id_category as relation_bkp_category_category, c.id_tax_rule, f.id as id_feature, f.feature_key, f.feature_value, f.type, f.id_category as relation_bkp_feature_category, f.id_feature as relation_bkp_feature_feature, v.id as id_value, v.id_bkp_feature, v.value_key, v.value_desc  FROM `ps_bkp_category` c left join ps_bkp_feature f on (c.id = f.id_bkp_category) left join ps_bkp_feature_value v on( f.id = v.id_bkp_feature) where c.id = {$id_category}";
+        $query = "SELECT c.id as id_category, c.bkp_key, c.bkp_name, c.id_category as relation_bkp_category_category, c.id_tax_rule, f.id as id_feature, f.feature_key, f.feature_value, f.type, v.id as id_value, v.id_bkp_feature, v.value_key, v.value_desc, v.id_category as relation_bkp_feature_category, v.id_feature as relation_bkp_feature_feature FROM `ps_bkp_category` c left join ps_bkp_feature f on (c.id = f.id_bkp_category) left join ps_bkp_feature_value v on( f.id = v.id_bkp_feature) where f.id is not null";
+
+        if(!empty($id_category)){
+            $query .= " and c.id = {$id_category}";
+        }
 
         $result = $db->executeS($query);
-
 
 
         $groups = array();

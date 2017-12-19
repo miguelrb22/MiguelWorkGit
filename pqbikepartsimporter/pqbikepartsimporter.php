@@ -1,6 +1,8 @@
 <?php
 
 require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
+require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeature.php');
+require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeatureValue.php');
 
 class PqBikepartsImporter extends Module
 {
@@ -101,6 +103,9 @@ class PqBikepartsImporter extends Module
     public function postProcess()
     {
 
+
+        //dump($_REQUEST);
+        //die();
         if (Tools::isSubmit('submitBKPLogin')) {
 
             $key = Tools::getValue(self::PQ_KEY_CK);
@@ -139,6 +144,7 @@ class PqBikepartsImporter extends Module
 
         } else if (Tools::isSubmit('submitBKPCategoryAsociation')) {
 
+
             $categories = array_filter($_REQUEST, function ($aux) {
 
                 if (strpos($aux, "bkpcategory_") !== false) return true;
@@ -151,8 +157,64 @@ class PqBikepartsImporter extends Module
                 $bkpid = explode("_", $key)[1];
                 $bkpcategory = new BkpCategory($bkpid);
                 $bkpcategory->id_category = $value;
+                $bkpcategory->id_tax_rule = Tools::getValue('bkp_category_tax_' . explode("_", $key)[1], 0);
                 $bkpcategory->save();
 
+            }
+
+            $this->context->controller->confirmations[] = ($this->l('Associations configured successfully'));
+
+        } else if (Tools::isSubmit('submitBKPCaracteristicsAsociation')) {
+
+
+            $feature_types = array_filter($_REQUEST, function ($aux) {
+
+                if (strpos($aux, "type_feature_") !== false) return true;
+
+                return false;
+            }, ARRAY_FILTER_USE_KEY);
+
+
+            foreach ($feature_types as $key => $value) {
+
+                $keydata = explode("_", $key);
+                $feature = new BkpFeature((int)$keydata[2]);
+                $feature->type = $value;
+                $feature->save();
+
+                if ($value == 1) {
+
+                    $categories_features_types = array_filter($_REQUEST, function ($aux) use ($feature) {
+
+                        if (strpos($aux, "feature_value_for_cat_{$feature->id}") !== false) return true;
+
+                        return false;
+                    }, ARRAY_FILTER_USE_KEY);
+
+                    foreach ($categories_features_types as $key2 => $value2) {
+
+                        $cfdata = explode("_", $key2);
+
+                        BkpFeatureValue::setDataFeatureValue($cfdata[4], $cfdata[5], $value, $value2);
+
+                    }
+                } else if ($value == 2) {
+
+                    $char_features_types = array_filter($_REQUEST, function ($aux) use ($feature) {
+
+                        if (strpos($aux, "feature_value_for_char_{$feature->id}") !== false) return true;
+
+                        return false;
+                    }, ARRAY_FILTER_USE_KEY);
+
+                    foreach ($char_features_types as $key2 => $value2) {
+
+                        $cfdata = explode("_", $key2);
+
+                        BkpFeatureValue::setDataFeatureValue($cfdata[4], $cfdata[5], $value, $value2);
+
+                    }
+                }
             }
 
             $this->context->controller->confirmations[] = ($this->l('Associations configured successfully'));

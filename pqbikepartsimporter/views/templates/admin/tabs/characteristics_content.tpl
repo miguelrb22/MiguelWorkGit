@@ -7,11 +7,15 @@
 
         <div class="col-lg-5">
 
-            <select class="bkp_selection" class="form-control" data-bkp-feature="{$bkp_feature['data'][0]['id_feature']}">
+            <select class="bkp_selection" class="form-control"
+                    data-bkp-feature="{$bkp_feature['data'][0]['id_feature']}"
+                    name="type_feature_{$bkp_feature['data'][0]['id_feature']}">
 
-                <option value="0"> No sincronizar</option>
-                <option value="1"> Son categorías</option>
-                <option value="2"> Son un grupo de caracteristicas</option>
+                <option value="0" {if $bkp_feature['data'][0]['type'] == 0} selected {/if}> No sincronizar</option>
+                <option value="1" {if $bkp_feature['data'][0]['type'] == 1} selected {/if}> Son categorías</option>
+                <option value="2" {if $bkp_feature['data'][0]['type'] == 2} selected {/if}> Son un grupo de
+                    caracteristicas
+                </option>
 
             </select>
         </div>
@@ -37,10 +41,11 @@
                 </div>
                 <div class="col-lg-4 col-xs-12">
 
-                    <select class="form-control">
+                    <select class="form-control"
+                            name="feature_value_for_char_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
 
                         {foreach from=$pq_bkp_features item=feature}
-                            <option value="{$feature['id_feature']}"> {ucfirst($feature['name'])} </option>
+                            <option value="{$feature['id_feature']}" {if $feature['id_feature'] == $bkp_feature['relation_bkp_feature_feature']} selected {/if}> {ucfirst($feature['name'])} </option>
                         {/foreach}
                     </select>
                 </div>
@@ -51,9 +56,10 @@
     <div class="row" id="bkp_selection_cat_{$data[0]['id_feature']}" style="display: none;">
 
         <br>
-        <h5>Categorías</h5>
+        <h4>Categorías</h4>
 
         {foreach from=$data item=bkp_feature}
+
             <div class="row">
                 <br>
                 <div class="col-lg-5 col-xs-12" style="margin-left: 20px;">
@@ -67,10 +73,11 @@
                 </div>
                 <div class="col-lg-4 col-xs-12">
 
-                    <select class="form-control">
+                    <select class="form-control"
+                            name="feature_value_for_cat_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
 
                         {foreach from=$prestashop_categories item=pc}
-                            <option value="{$pc['id_category']}">{$pc['name']}</option>
+                            <option value="{$pc['id_category']}" {if $pc['id_category'] == $bkp_feature['relation_bkp_feature_category']} selected {/if}>{$pc['name']}</option>
                         {/foreach}
                     </select>
                 </div>
@@ -91,22 +98,50 @@
         switch (value) {
 
             case '0':
-                $('#bkp_selection_char_'+data).hide();
-                $('#bkp_selection_cat_'+data).hide();
+                $('#bkp_selection_char_' + data).hide();
+                $('#bkp_selection_cat_' + data).hide();
                 break;
 
             case '1':
-                $('#bkp_selection_char_'+data).hide();
-                $('#bkp_selection_cat_'+data).show();
+                $('#bkp_selection_char_' + data).hide();
+                $('#bkp_selection_cat_' + data).show();
 
                 break;
 
             case '2':
-                $('#bkp_selection_char_'+data).show();
-                $('#bkp_selection_cat_'+data).hide();
+                $('#bkp_selection_char_' + data).show();
+                $('#bkp_selection_cat_' + data).hide();
                 break;
         }
 
+    });
+
+    $(document).ready(function () {
+
+        $(".bkp_selection").each(function (index) {
+
+            var data = ($(this).data('bkp-feature'));
+            var value = this.value;
+
+            switch (value) {
+
+                case '0':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+
+                case '1':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).show();
+
+                    break;
+
+                case '2':
+                    $('#bkp_selection_char_' + data).show();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+            }
+        });
     });
 
 </script>

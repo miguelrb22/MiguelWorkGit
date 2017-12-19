@@ -7,15 +7,34 @@
     <div class="panel" id="fieldset_0">
 
         <div class="panel-heading">
-            <i class="icon-exchange"></i> {l s='ASSOCIATION (CATEGORY BIKEPARTS -> PRESTASHOP CATEGORY)' mod='pqbikepartsImporter'}
+            <i class="icon-exchange"></i> {l s='Category Relationship' mod='pqbikepartsImporter'}
             <br>
         </div>
 
         <div class="form-wrapper"></div>
 
-        {foreach from=$bkp_categories item=bkp_category}
+        {foreach name=foo from=$bkp_categories item=bkp_category}
+
+            {if $smarty.foreach.foo.first}
+                <div class="row">
+                    <div class="col-lg-4">
+                        <h2>Bikeparts Category</h2>
+                    </div>
+
+
+                    <div class="col-lg-4">
+                        <h2>Local Category</h2>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <h2>Tax rule</h2>
+
+                    </div>
+                </div>
+                <hr>
+            {/if}
             <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-3">
 
                     <span style="font-size: 15px"> {$bkp_category['bkp_name']} </span>
 
@@ -27,7 +46,7 @@
 
                 </div>
 
-                <div class="col-lg-4">
+                <div class="col-lg-3">
 
                     <select class="form-control" name="bkpcategory_{$bkp_category['id']}">
 
@@ -38,16 +57,19 @@
                 </div>
 
                 <div class="col-lg-1">
-                    <span style="margin: auto;  text-align: center;"> <i class="icon-arrow-right"></i> </span>
+                    <CENTER><span style="margin: auto;  text-align: center;"> <i class="icon-arrow-right"></i> </span>
+                    </CENTER>
 
                 </div>
 
-                <div class="col-lg-2">
+                <div class="col-lg-3">
 
-                    <select class="form-control" name="bkpcategory_tax_{$bkp_category['id']}">
+                    <select class="form-control" name="bkp_category_tax_{$bkp_category['id']}">
+
+                        <option value="0">Without taxes</option>
 
                         {foreach from=$taxes item=tax}
-                            <option value="{$tax['id_tax']}">{$tax['name']}</option>
+                            <option value="{$tax['id_tax']}" {if $tax['id_tax'] == $bkp_category['id_tax_rule']} selected {/if}>{$tax['name']}</option>
                         {/foreach}
                     </select>
                 </div>
@@ -55,18 +77,11 @@
 
             </div>
             <hr>
-
             {foreachelse}
-
             <span>{l s='Without data. Please, configure cron. For first time, you can click the next button.' mod='pqbikepartsImporter'}</span>
-
             <br>
             <br>
-
-
             <a class="btn btn-warning" href="{$bkp_cron_categories}"> Execute </a>
-
-
         {/foreach}
 
         <div class="panel-footer">

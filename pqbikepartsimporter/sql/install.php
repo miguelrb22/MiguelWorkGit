@@ -16,6 +16,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'bkp_feature_value` (
     `id_bkp_feature` int NOT NULL,
 	`value_key` varchar(255),
 	`value_desc` varchar(255),
+	`id_category` int default 0,
+	`id_feature` int default 0,
     PRIMARY KEY  (`id`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
@@ -33,8 +35,6 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'bkp_feature` (
 	`feature_key` varchar(255) NOT NULL,
 	`feature_value` varchar(255) NOT NULL,
 	`type` tinyint(1) default 0,
-	`id_category` int default 0,
-	`id_feature` int default 0,
     PRIMARY KEY  (`id`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 

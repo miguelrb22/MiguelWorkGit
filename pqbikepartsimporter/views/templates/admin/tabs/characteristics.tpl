@@ -2,7 +2,7 @@
       action="{$bkpsubmiturl}"
       method="post" enctype="multipart/form-data" novalidate="">
 
-    <input type="hidden" name="submitBKPCategoryAsociation" value="1">
+    <input type="hidden" name="submitBKPCaracteristicsAsociation" value="1">
 
 
 
@@ -29,7 +29,7 @@
 
                 <div class="col-lg-5">
 
-                    <select id="bkp_category" class="form-control">
+                    <select id="bkp_category" class="form-control" name="general_category">
                         {foreach from=$bkp_categories item=bkp_category}
                             <option value="{$bkp_category['id']}">{$bkp_category['bkp_name']}</option>
                         {/foreach}
@@ -54,7 +54,7 @@
 
 
         <div class="panel-footer">
-            <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPCategoryAsociation"
+            <button type="submit" value="1" id="module_form_submit_btn" name="submitBKPCaracteristicsAsociation"
                     class="btn btn-default pull-right">
                 <i class="process-icon-save"></i> Asociar
             </button>
