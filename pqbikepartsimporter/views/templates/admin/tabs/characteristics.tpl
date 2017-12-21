@@ -63,3 +63,61 @@
     </div>
 
 </form>
+
+<script type="text/javascript">
+
+    $('.bkp_selection').on('change', function () {
+
+        var data = ($(this).data('bkp-feature'));
+        var value = this.value;
+
+        switch (value) {
+
+            case '0':
+                $('#bkp_selection_char_' + data).hide();
+                $('#bkp_selection_cat_' + data).hide();
+                break;
+
+            case '1':
+                $('#bkp_selection_char_' + data).hide();
+                $('#bkp_selection_cat_' + data).show();
+
+                break;
+
+            case '2':
+                $('#bkp_selection_char_' + data).show();
+                $('#bkp_selection_cat_' + data).hide();
+                break;
+        }
+
+    });
+
+    $(document).ready(function () {
+
+        $(".bkp_selection").each(function (index) {
+
+            var data = ($(this).data('bkp-feature'));
+            var value = this.value;
+
+            switch (value) {
+
+                case '0':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+
+                case '1':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).show();
+
+                    break;
+
+                case '2':
+                    $('#bkp_selection_char_' + data).show();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+            }
+        });
+    });
+
+</script>

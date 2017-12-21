@@ -7,6 +7,7 @@
             <a href="#general" class="list-group-item active" data-toggle="tab"><i class="icon-gear"></i> {l s='General' mod='pqbikepartsImporter'}</a>
             <a href="#categories" class="list-group-item" data-toggle="tab"><i class="icon-exchange"></i> {l s='Categories Relationship ' mod='pqbikepartsImporter'}</a>
             <a href="#characteristics" class="list-group-item" data-toggle="tab"><i class="icon-indent"></i> {l s='Characteristics Relationship' mod='pqbikepartsImporter'}</a>
+            <a href="#cron" class="list-group-item" data-toggle="tab"><i class="icon-refresh"></i> {l s='Crons' mod='pqbikepartsImporter'}</a>
             <a href="#logout" class="list-group-item" data-toggle="tab"><i class="icon-power-off"></i> {l s='Logout' mod='pqbikepartsImporter'}</a>
         </div>
     </div>
@@ -24,6 +25,10 @@
 
         <div class="tab-pane" id="characteristics">
             {include file = './tabs/characteristics.tpl' }
+        </div>
+
+        <div class="tab-pane" id="cron">
+            {include file = './tabs/cron.tpl' }
         </div>
 
         <div class="tab-pane" id="logout">

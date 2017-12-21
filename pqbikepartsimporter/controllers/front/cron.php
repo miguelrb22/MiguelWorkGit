@@ -134,6 +134,11 @@ class PqBikepartsImporterCronModuleFrontController extends ModuleFrontController
 
             }
 
+            if (Tools::isSubmit("redirect")) {
+
+                Tools::redirect($_SERVER['HTTP_REFERER']);
+            }
+
             die("finish characteristics load");
 
         } catch (Exception $e) {
