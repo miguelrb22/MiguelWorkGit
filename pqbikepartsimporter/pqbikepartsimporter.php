@@ -59,7 +59,7 @@ class PqBikepartsImporter extends Module
         $this->postProcess();
         $logged = $this->isLoggedIn();
 
-        Context::getContext()->controller->addJs(_MODULE_DIR_.$this->module->name.'/views/js/pqbikepartsimporter.js');
+        Context::getContext()->controller->addJs(_MODULE_DIR_.$this->name.'/views/js/pqbikepartsimporter.js');
 
         if ($logged) {
 
@@ -90,10 +90,11 @@ class PqBikepartsImporter extends Module
                 'bkp_cron_charasteristics' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "charasteristics")),
                 'bkp_cron_categories_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => false, "action" => "categories")),
                 'bkp_cron_charasteristics_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => false, "action" => "charasteristics")),
+                'bkp_cron_generate' => $this->context->link->getModuleLink('pqbikepartsimporter', 'generate'),
             ));
 
             $this->context->smarty->assign(array(
-                'characteristics_layout' => $this->display(__FILE__, 'views/templates/admin/tabs/characteristics_content.tpl')
+                'characteristics_layout' => $this->display(__FILE__, 'views/templates/front/characteristics_content.tpl')
             ));
 
             return $this->display(__FILE__, 'views/templates/admin/configuration.tpl');

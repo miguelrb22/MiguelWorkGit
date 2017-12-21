@@ -51,7 +51,13 @@ class PqBikepartsImporterGenerateModuleFrontController extends ModuleFrontContro
             'prestashop_categories' => $prestashop_categories,
         ));
 
-        $tpl = 'characteristics_content.tpl';
+        if(Tools::version_compare(_PS_VERSION_, '1.7', '<')) {
+            $tpl = 'characteristics_content.tpl';
+        }else {
+
+            $tpl = 'module:' . $this->module->name . '/views/templates/front/characteristics_content.tpl';
+        }
+
         $this->setTemplate($tpl);
 
         $html = $this->context->smarty->fetch($this->template);

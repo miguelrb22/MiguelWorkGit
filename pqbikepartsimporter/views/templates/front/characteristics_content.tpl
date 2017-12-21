@@ -41,8 +41,7 @@
                 </div>
                 <div class="col-lg-4 col-xs-12">
 
-                    <select class="form-control"
-                            name="feature_value_for_char_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
+                    <select class="form-control final_bkp_assigment" data-feature="{$bkp_feature['id_feature']}" data-feature-value="{$bkp_feature['id_value']}" name="feature_value_for_char_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
 
                         {foreach from=$pq_bkp_features item=feature}
                             <option value="{$feature['id_feature']}" {if $feature['id_feature'] == $bkp_feature['relation_bkp_feature_feature']} selected {/if}> {ucfirst($feature['name'])} </option>
@@ -73,8 +72,7 @@
                 </div>
                 <div class="col-lg-4 col-xs-12">
 
-                    <select class="form-control"
-                            name="feature_value_for_cat_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
+                    <select class="form-control final_bkp_assigment" data-feature="{$bkp_feature['id_feature']}" data-feature-value="{$bkp_feature['id_value']}" name="feature_value_for_cat_{$bkp_feature['id_feature']}_{$bkp_feature['id_value']}">
 
                         {foreach from=$prestashop_categories item=pc}
                             <option value="{$pc['id_category']}" {if $pc['id_category'] == $bkp_feature['relation_bkp_feature_category']} selected {/if}>{$pc['name']}</option>
@@ -87,4 +85,3 @@
     </div>
     <hr>
 {/foreach}
-

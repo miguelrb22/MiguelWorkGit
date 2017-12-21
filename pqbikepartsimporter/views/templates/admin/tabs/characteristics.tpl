@@ -4,9 +4,6 @@
 
     <input type="hidden" name="submitBKPCaracteristicsAsociation" value="1">
 
-
-
-
     <div class="panel" id="fieldset_0">
 
         <div class="panel-heading">
@@ -29,7 +26,7 @@
 
                 <div class="col-lg-5">
 
-                    <select id="bkp_category" class="form-control" name="general_category">
+                    <select id="general_category_select" class="form-control" name="general_category">
                         {foreach from=$bkp_categories item=bkp_category}
                             <option value="{$bkp_category['id']}">{$bkp_category['bkp_name']}</option>
                         {/foreach}
@@ -66,7 +63,7 @@
 
 <script type="text/javascript">
 
-    $('.bkp_selection').on('change', function () {
+    $(document).on('change', '.bkp_selection', function () {
 
         var data = ($(this).data('bkp-feature'));
         var value = this.value;
@@ -89,6 +86,38 @@
                 $('#bkp_selection_cat_' + data).hide();
                 break;
         }
+
+    });
+
+
+    $(document).on('change', '.final_bkp_assigment', function () {
+
+        var value = this.value;
+
+        alert(value);
+
+    });
+
+
+
+    $('#general_category_select').on('change', function () {
+
+        var value = this.value;
+
+        $.ajax({
+            type: "POST",
+            url: "{$bkp_cron_generate}",
+            data: {literal}{general_category: value}{/literal},
+            success: function (data) {
+
+                $('.bkp_characteristics_layout').html(data);
+                reloadCategoryViewMap();
+            },
+            error: function () {
+
+                alert("Error loading data at this moment");
+            }
+        });
 
     });
 
@@ -119,5 +148,35 @@
             }
         });
     });
+
+
+    function reloadCategoryViewMap() {
+
+        $(".bkp_selection").each(function (index) {
+
+            var data = ($(this).data('bkp-feature'));
+            var value = this.value;
+
+            switch (value) {
+
+                case '0':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+
+                case '1':
+                    $('#bkp_selection_char_' + data).hide();
+                    $('#bkp_selection_cat_' + data).show();
+
+                    break;
+
+                case '2':
+                    $('#bkp_selection_char_' + data).show();
+                    $('#bkp_selection_cat_' + data).hide();
+                    break;
+            }
+        });
+
+    }
 
 </script>
