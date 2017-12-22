@@ -37,6 +37,11 @@ class PqBikepartsImporter extends Module
         } else {
             include(dirname(__FILE__) . '/sql/install.php');
         }
+
+        Configuration::updateValue(self::PQ_BKP_COMMISSION_CK, 0);
+        Configuration::updateValue(self::PQ_BKP_ADDITIONAL_TIME_CK, 0);
+        Configuration::updateValue(self::PQ_BKP_DEFAULT_STATUS_CK, 1);
+
         return true;
     }
 
@@ -50,6 +55,9 @@ class PqBikepartsImporter extends Module
 
         Configuration::deleteByName(self::PQ_KEY_CK);
         Configuration::deleteByName(self::PQ_PASS_CK);
+        Configuration::deleteByName(self::PQ_BKP_COMMISSION_CK);
+        Configuration::deleteByName(self::PQ_BKP_ADDITIONAL_TIME_CK);
+        Configuration::deleteByName(self::PQ_BKP_DEFAULT_STATUS_CK);
 
         return true;
     }
@@ -59,7 +67,7 @@ class PqBikepartsImporter extends Module
         $this->postProcess();
         $logged = $this->isLoggedIn();
 
-        Context::getContext()->controller->addJs(_MODULE_DIR_.$this->name.'/views/js/pqbikepartsimporter.js');
+        Context::getContext()->controller->addJs(_MODULE_DIR_ . $this->name . '/views/js/pqbikepartsimporter.js');
 
         if ($logged) {
 
@@ -70,7 +78,12 @@ class PqBikepartsImporter extends Module
 
             $all = BkpCategory::getAll();
 
-            $data = BkpCategory::getCategoryFeatureValueData($all[0]['id']);
+            if (isset($all[0]['id'])) {
+                $data = BkpCategory::getCategoryFeatureValueData($all[0]['id']);
+
+            } else {
+                $data = array();
+            }
 
 
             $features = Feature::getFeatures($this->context->language->id);
@@ -88,9 +101,12 @@ class PqBikepartsImporter extends Module
                 'bkpsubmiturl' => $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
                 'bkp_cron_categories' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "categories")),
                 'bkp_cron_charasteristics' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "charasteristics")),
-                'bkp_cron_categories_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => false, "action" => "categories")),
-                'bkp_cron_charasteristics_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => false, "action" => "charasteristics")),
+                'bkp_cron_products' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("redirect" => true, "action" => "products")),
+                'bkp_cron_categories_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("action" => "categories")),
+                'bkp_cron_charasteristics_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("action" => "charasteristics")),
+                'bkp_cron_products_nr' => $this->context->link->getModuleLink('pqbikepartsimporter', 'cron', array("action" => "products")),
                 'bkp_cron_generate' => $this->context->link->getModuleLink('pqbikepartsimporter', 'generate'),
+                'bkp_cron_updatedb' => $this->context->link->getModuleLink('pqbikepartsimporter', 'updatedb'),
             ));
 
             $this->context->smarty->assign(array(
@@ -222,9 +238,7 @@ class PqBikepartsImporter extends Module
             }
 
             $this->context->controller->confirmations[] = ($this->l('Associations configured successfully'));
-
         }
-
     }
 
     /**

@@ -7,8 +7,6 @@
  */
 
 require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpCategory.php');
-require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeature.php');
-require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeatureValue.php');
 
 class PqBikepartsImporterGenerateModuleFrontController extends ModuleFrontController
 {
@@ -16,15 +14,12 @@ class PqBikepartsImporterGenerateModuleFrontController extends ModuleFrontContro
 
     public function __construct()
     {
-
         parent::__construct();
-
     }
 
     public function init()
     {
         parent::init();
-
     }
 
     public function postProcess()
@@ -32,12 +27,11 @@ class PqBikepartsImporterGenerateModuleFrontController extends ModuleFrontContro
 
         $prestashop_categories = Category::getAllCategoriesName();
 
-
         $prestashop_categories[] = array("id_category" => 0, "name" => $this->module->l('No sincronizar'));
 
         $all = BkpCategory::getAll();
 
-        $id = Tools::getValue('general_category',$all[0]['id']);
+        $id = Tools::getValue('general_category', $all[0]['id']);
 
         $data = BkpCategory::getCategoryFeatureValueData($id);
 
@@ -51,9 +45,9 @@ class PqBikepartsImporterGenerateModuleFrontController extends ModuleFrontContro
             'prestashop_categories' => $prestashop_categories,
         ));
 
-        if(Tools::version_compare(_PS_VERSION_, '1.7', '<')) {
+        if (Tools::version_compare(_PS_VERSION_, '1.7', '<')) {
             $tpl = 'characteristics_content.tpl';
-        }else {
+        } else {
 
             $tpl = 'module:' . $this->module->name . '/views/templates/front/characteristics_content.tpl';
         }

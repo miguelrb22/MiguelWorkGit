@@ -84,5 +84,15 @@
 
     </div>
     <hr>
+
+    {foreachelse}
+    <div class="row">
+        <div class="col-lg-12">
+            <span style="font-weight: bold; font-size: 14px; text-align: center; margin: 0 auto;">{l s='Without characteristics. Please, configure cron. You have more information in crons tab' mod='pqbikepartsImporter'}</span>
+        </div>
+
+    </div>
+    <br>
+    <br>
 {/foreach}
 

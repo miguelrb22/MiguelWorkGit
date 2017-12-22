@@ -78,10 +78,16 @@
             </div>
             <hr>
             {foreachelse}
-            <span>{l s='Without data. Please, configure cron. For first time, you can click the next button.' mod='pqbikepartsImporter'}</span>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <span style="font-weight: bold; font-size: 14px; text-align: center; margin: 0 auto;">{l s='Without categories. Please, configure cron. You have more information in crons tab' mod='pqbikepartsImporter'}</span>
+            </div>
+
+        </div>
             <br>
             <br>
-            <a class="btn btn-warning" href="{$bkp_cron_categories}"> Execute </a>
+
         {/foreach}
 
         <div class="panel-footer">
