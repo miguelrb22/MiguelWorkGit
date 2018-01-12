@@ -35,6 +35,7 @@ class BikePartsWebServiceClient
         $data = self::getResponseXML($url);
 
 
+
         $processstatus = (string)$data->xpath('processstatus')[0];
 
 
@@ -193,7 +194,7 @@ class BikePartsWebServiceClient
                 $solution = self::getCategory($data);
                 break;
             case "products":
-                $solution = self::getProducts($data);
+                $solution = self::processProducts($data);
                 break;
             default :
 
@@ -389,19 +390,34 @@ class BikePartsWebServiceClient
         return $collection;
     }
 
+    public static function getProductsByCategory($catKey, $page = null, $perpage = null){
+
+
+        $collection = array();
+        $auth = BikePartsWebServiceClient::checkLogin();
+
+        if($auth['logged']) {
+
+            $url = BikePartsWebServiceClient::buildURLForProductsByCategory($auth['key'], $auth['pass'],$catKey,$page,$perpage,1,1);
+            $response = BikePartsWebServiceClient::requestXML($url);
+            $collection = BikePartsWebServiceClient::processProducts($response['data']);
+            
+        }
+
+        return $collection;
+    }
+
     /**
-     * Devuelve los productos
+     * Procesa la respuesta del sistema y devuelve los productos
      * @param type $data
      * @return type
      */
-    private function getProducts($data)
+    private static function processProducts($data)
     {
-        $path = dirname(__FILE__) . '/PqBikeImportLib.php';
-        require_once $path;
 
-        PqBikeImportLib::loadClass("model/PqBikeProduct");
-        PqBikeImportLib::loadClass("model/PqBikeFeature");
-        PqBikeImportLib::loadClass("model/PqBikeFeaturevalue");
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeProduct.php');
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeFeature.php');
+        require_once (_PS_MODULE_DIR_.'/pqbikepartsimporter/classes/model/PqBikeFeaturevalue.php');
 
         $products = array();
 
@@ -424,6 +440,14 @@ class BikePartsWebServiceClient
             $product->customstariffnumber = (string)$obj->customstariffnumber;
             $product->supplier = (string)$obj->supplier;
             $product->categorykey = (string)$obj->categorykey;
+
+            if(!isset($obj->expecteddeliverydate)){
+                $product->expecteddeliverydate = '';
+            }else{
+                $product->expecteddeliverydate = (string)$obj->expecteddeliverydate;
+            }
+
+
 
             $features_in_array = array();
 
@@ -534,7 +558,7 @@ class BikePartsWebServiceClient
 
     }
 
-    public function checkLogin()
+    public static function checkLogin()
     {
         $auth = array();
 

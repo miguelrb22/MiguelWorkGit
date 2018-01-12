@@ -26,6 +26,7 @@ class PqBikeProduct
     public $customstariffnumber;
     public $supplier;
     public $categorykey;
+    public $expecteddeliverydate;
 
     /**
      * son las características realcionadas con el producto

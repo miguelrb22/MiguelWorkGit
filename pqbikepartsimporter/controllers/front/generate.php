@@ -1,4 +1,6 @@
 <?php
+
+die();
 /**
  * Created by PhpStorm.
  * User: migue

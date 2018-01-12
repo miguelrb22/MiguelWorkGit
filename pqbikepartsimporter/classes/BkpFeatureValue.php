@@ -34,6 +34,23 @@ class BkpFeatureValue extends ObjectModel
         $result = $db->getValue($query);
 
         if(isset($result)){
+            return new BkpFeatureValue($result);
+        }
+
+        return new BkpFeatureValue();
+
+    }
+
+
+    public static function getValueByFeatureAndValueDesc($feature, $key){
+
+        $db = Db::getInstance();
+
+        $query = "SELECT id from ". _DB_PREFIX_ ."bkp_feature_value where id_bkp_feature = {$feature} and value_desc = '{$key}'";
+
+        $result = $db->getValue($query);
+
+        if(isset($result)){
 
             return new BkpFeatureValue($result);
         }
@@ -56,6 +73,19 @@ class BkpFeatureValue extends ObjectModel
 
     }
 
+    public static function getBkpFeatureValueIdsByIdFeature($id)
+    {
+        $sql = 'SELECT id FROM `' . _DB_PREFIX_ . 'bkp_feature_value` WHERE `id_bkp_feature` = \'' . pSQL($id) . '\'';
 
+        $data = Db::getInstance()->executeS($sql);
+        return $data;
+    }
 
+    public static function getBkpFeatureValueIdsById($id)
+    {
+        $sql = 'SELECT id,id_bkp_feature FROM `' . _DB_PREFIX_ . 'bkp_feature_value` WHERE `id_feature` = \'' . pSQL($id) . '\'';
+
+        $data = Db::getInstance()->executeS($sql);
+        return $data;
+    }
 }

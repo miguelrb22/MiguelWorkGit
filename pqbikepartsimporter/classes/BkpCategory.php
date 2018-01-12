@@ -1,6 +1,6 @@
 <?php
 
-class BkpCategory extends ObjectModelCore
+class BkpCategory extends ObjectModel
 {
     public $bkp_key;
     public $bkp_name;
@@ -82,6 +82,24 @@ class BkpCategory extends ObjectModelCore
 
     }
 
+    /**
+     * Devuelve las categorías con asociación
+     */
+    public static function getCategoriesWithAssociation(){
+        $query = new dbQuery();
+        $query->select('*')->from(self::$definition['table'])->where('id_category!=0');
+
+        return db::getInstance()->executeS($query);
+    }
+
+
+    public static function getBkpCategoryIdsByIdCategory($id_cat)
+    {
+        $sql = 'SELECT id FROM `' . _DB_PREFIX_ . 'bkp_category` WHERE `id_category` = \'' . pSQL($id_cat) . '\'';
+
+        $data = Db::getInstance()->executeS($sql);
+        return $data;
+    }
 
 
 

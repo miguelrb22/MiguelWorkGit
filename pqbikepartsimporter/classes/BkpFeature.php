@@ -39,5 +39,15 @@ class BkpFeature extends ObjectModel
         return new BkpFeature();
 
     }
+
+    public static function getBkpFeatureIdsByIdCategory($id)
+    {
+        $sql = 'SELECT id FROM `' . _DB_PREFIX_ . 'bkp_feature` WHERE `id_bkp_category` = \'' . pSQL($id) . '\'';
+
+        $data = Db::getInstance()->executeS($sql);
+        return $data;
+    }
+
+
 }
 

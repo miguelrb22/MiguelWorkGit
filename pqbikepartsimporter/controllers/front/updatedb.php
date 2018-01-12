@@ -6,6 +6,8 @@
  * Time: 9:41
  */
 
+
+die();
 require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeatureValue.php');
 require_once(_PS_MODULE_DIR_ . 'pqbikepartsimporter/classes/BkpFeature.php');
 

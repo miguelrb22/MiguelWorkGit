@@ -48,7 +48,7 @@
 
                 <div class="col-lg-3">
 
-                    <select class="form-control" name="bkpcategory_{$bkp_category['id']}">
+                    <select class="form-control chosen" name="bkpcategory_{$bkp_category['id']}">
 
                         {foreach from=$prestashop_categories item=pc}
                             <option value="{$pc['id_category']}" {if $bkp_category['id_category'] == $pc['id_category']} selected {/if}>{$pc['name']}</option>
@@ -69,7 +69,7 @@
                         <option value="0">Without taxes</option>
 
                         {foreach from=$taxes item=tax}
-                            <option value="{$tax['id_tax']}" {if $tax['id_tax'] == $bkp_category['id_tax_rule']} selected {/if}>{$tax['name']}</option>
+                            <option value="{$tax['id_tax_rules_group']}" {if $tax['id_tax_rules_group'] == $bkp_category['id_tax_rule']} selected {/if}>{$tax['name']}</option>
                         {/foreach}
                     </select>
                 </div>
@@ -100,3 +100,9 @@
     </div>
 
 </form>
+
+<style>
+.chosen-container{
+    width: 100% !important;
+}
+</style>

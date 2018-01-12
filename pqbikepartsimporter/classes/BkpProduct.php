@@ -2,7 +2,7 @@
 
 class BkpProduct extends ObjectModel
 {
-    public $id_bkp_reference;
+    public $bkp_reference;
     public $id_product;
 
     /*
@@ -12,10 +12,27 @@ class BkpProduct extends ObjectModel
         'table' => 'bkp_product',
         'primary' => 'id',
         'fields' => array(
-            'id_bkp_reference' => array('type' => self::TYPE_STRING, 'required' => true),
+            'bkp_reference' => array('type' => self::TYPE_STRING, 'required' => true),
             'id_product' => array('type' => self::TYPE_INT, 'required' => true ),
         )
     );
+
+    /**
+     * Devuelve la información del producto por referencia bikeparts
+     */
+    public static function getDataByReference($ref){
+        $query = new dbQuery();
+        $query->select('*')->from(self::$definition['table'])->where('bkp_reference = \''.pSQL($ref).'\'');
+
+        return db::getInstance()->getRow($query);
+    }
+
+    public static function getDataByIdProduct($id_product){
+        $query = new dbQuery();
+        $query->select('*')->from(self::$definition['table'])->where('id_product = \''.pSQL($id_product).'\'');
+
+        return db::getInstance()->getRow($query);
+    }
 }
 
 ?>
